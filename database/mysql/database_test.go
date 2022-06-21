@@ -210,5 +210,8 @@ func getTestConfig() *util.Config {
 		DBUser:     dbUser,
 		DBPassword: dbPassword,
 		DBDriver:   dbDriver,
+		AdminEmail: "admin@test.com",
+		AdminName:  "tester number 1",
+		AdminPass:  "password",
 	}
 }

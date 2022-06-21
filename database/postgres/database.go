@@ -81,6 +81,36 @@ func (p *Postgres) Setup(config *util.Config) error {
 		log.Info(fmt.Sprintf("Updating database from verison %v to %v", dbVersion, database.CurrentVersion))
 		return p.updateTables(dbVersion, database.CurrentVersion)
 	}
+
+	// Check if there's an account created.
+	accounts, err := m.GetAccounts()
+	if err != nil {
+		return fmt.Errorf("error checking for account: %v", err)
+	}
+	if len(accounts) < 1 {
+		log.Info("Creating admin user.")
+		if config.AdminName == "" || config.AdminEmail == "" || config.AdminPass == "" {
+			return errors.New("admin account doesn't exist and proper credentions have not been supplied")
+		}
+		acc := types.Account{
+			Name:     config.AdminName,
+			Email:    config.AdminEmail,
+			Password: config.AdminPass,
+			Type:     "admin",
+		}
+		err = m.validate.Struct(acc)
+		if err != nil {
+			return fmt.Errorf("error validating base admin account on setup: %v", err)
+		}
+		acc.Password, err = auth.HashPassword(config.AdminPass)
+		if err != nil {
+			return fmt.Errorf("error hashing admin account password on setup: %v", err)
+		}
+		_, err = m.AddAccount(acc)
+		if err != nil {
+			return fmt.Errorf("error adding admin account on setup: %v", err)
+		}
+	}
 	return nil
 }
 
