@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v4"
 )
 
 // GetKeyAndAccount Gets an account and key based upon the key value.
@@ -21,7 +19,7 @@ func (p *Postgres) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 		ctx,
 		"SELECT "+
 			"account_id, account_name, account_email, account_type, account_locked, "+
-			"key_value, key_type, allowed_hosts, valid_until "+
+			"key_value, key_type, reader_name, valid_until "+
 			"FROM account NATURAL JOIN api_key WHERE account_deleted=FALSE AND key_deleted=FALSE AND key_value=$1",
 		key,
 	)
@@ -43,7 +41,7 @@ func (p *Postgres) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 			&outVal.Account.Locked,
 			&outVal.Key.Value,
 			&outVal.Key.Type,
-			&outVal.Key.AllowedHosts,
+			&outVal.Key.ReaderName,
 			&outVal.Key.ValidUntil,
 		)
 		if err != nil {

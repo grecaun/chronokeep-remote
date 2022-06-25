@@ -7,27 +7,25 @@ import (
 )
 
 func setupMultiTests() {
-	if len(accounts) < 1 {
-		accounts = []types.Account{
-			{
-				Name:     "John Smith",
-				Email:    "j@test.com",
-				Type:     "admin",
-				Password: testHashPassword("password"),
-			},
-			{
-				Name:     "Rose MacDonald",
-				Email:    "rose2004@test.com",
-				Type:     "paid",
-				Password: testHashPassword("password"),
-			},
-			{
-				Name:     "Tia Johnson",
-				Email:    "tiatheway@test.com",
-				Type:     "free",
-				Password: testHashPassword("password"),
-			},
-		}
+	accounts = []types.Account{
+		{
+			Name:     "John Smith",
+			Email:    "j@test.com",
+			Type:     "admin",
+			Password: testHashPassword("password"),
+		},
+		{
+			Name:     "Rose MacDonald",
+			Email:    "rose2004@test.com",
+			Type:     "paid",
+			Password: testHashPassword("password"),
+		},
+		{
+			Name:     "Tia Johnson",
+			Email:    "tiatheway@test.com",
+			Type:     "free",
+			Password: testHashPassword("password"),
+		},
 	}
 }
 
@@ -49,14 +47,14 @@ func TestGetKeyAndAccount(t *testing.T) {
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
-			AllowedHosts:      "",
+			ReaderName:        "reader1",
 			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
-			AllowedHosts:      "https://test.com/",
+			ReaderName:        "reader2",
 			ValidUntil:        &times[1],
 		},
 	}

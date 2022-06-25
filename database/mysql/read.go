@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (m *MySQL) GetReads(account, name string, from, to int64) ([]types.Read, error) {
+func (m *MySQL) GetReads(account int64, name string, from, to int64) ([]types.Read, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 	return reads, nil
 }
 
-func (m *MySQL) DeleteReads(account, name string, from, to int64) (int64, error) {
+func (m *MySQL) DeleteReads(account int64, name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}

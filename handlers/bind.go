@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 // Handler Struct for using methods for handling information.
 type Handler struct {
+	validate *validator.Validate
 }
 
 func (h Handler) Bind(group *echo.Group) {

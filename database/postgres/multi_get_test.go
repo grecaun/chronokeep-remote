@@ -49,14 +49,14 @@ func TestGetKeyAndAccount(t *testing.T) {
 			AccountIdentifier: account1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
-			AllowedHosts:      "",
+			ReaderName:        "reader1",
 			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: account2.Identifier,
 			Value:             "030001-1ACSDD-KH789A-00123B",
 			Type:              "delete",
-			AllowedHosts:      "https://test.com/",
+			ReaderName:        "reader2",
 			ValidUntil:        &times[1],
 		},
 	}

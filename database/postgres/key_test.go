@@ -7,16 +7,25 @@ import (
 )
 
 var (
-	accounts []string
-	keys     []types.Key
-	times    []time.Time
+	keys  []types.Key
+	times []time.Time
 )
 
 func setupKeyTests() {
 	if len(accounts) < 1 {
-		accounts = []string{
-			"AccountIdentifier1",
-			"AccountIdentifier2",
+		accounts = []types.Account{
+			{
+				Name:     "John Smith",
+				Email:    "j@test.com",
+				Type:     "admin",
+				Password: testHashPassword("password"),
+			},
+			{
+				Name:     "Rose MacDonald",
+				Email:    "rose2004@test.com",
+				Type:     "paid",
+				Password: testHashPassword("password"),
+			},
 		}
 	}
 	if len(times) < 1 {
@@ -29,7 +38,7 @@ func setupKeyTests() {
 	if len(keys) < 1 {
 		keys = []types.Key{
 			{
-				AccountIdentifier: accounts[0],
+				AccountIdentifier: accounts[0].Identifier,
 				Name:              "test1",
 				Value:             "030001-1ACSDD-K2389A-00123B",
 				Type:              "default",
@@ -37,14 +46,14 @@ func setupKeyTests() {
 				ValidUntil:        &times[0],
 			},
 			{
-				AccountIdentifier: accounts[0],
+				AccountIdentifier: accounts[0].Identifier,
 				Value:             "030001-1ACSDD-K2389A-22123B",
 				Type:              "write",
 				ReaderName:        "reader2",
 				ValidUntil:        &times[1],
 			},
 			{
-				AccountIdentifier: accounts[1],
+				AccountIdentifier: accounts[1].Identifier,
 				Name:              "test2",
 				Value:             "030001-1ACSDD-KH789A-00123B",
 				Type:              "delete",
@@ -52,14 +61,14 @@ func setupKeyTests() {
 				ValidUntil:        &times[2],
 			},
 			{
-				AccountIdentifier: accounts[1],
+				AccountIdentifier: accounts[1].Identifier,
 				Value:             "030001-1ACSCT-K2389A-22123B",
 				Type:              "write",
 				ReaderName:        "reader4",
 				ValidUntil:        nil,
 			},
 			{
-				AccountIdentifier: accounts[0],
+				AccountIdentifier: accounts[1].Identifier,
 				Name:              "test1",
 				Value:             "030001-1ACSDD-K2389A-00123B-55223A",
 				Type:              "default",
@@ -77,6 +86,13 @@ func TestAddKey(t *testing.T) {
 	}
 	defer finalize(t)
 	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
 	key, err := db.AddKey(keys[0])
 	if err != nil {
 		t.Fatalf("Error adding key: %v", err)
@@ -128,6 +144,13 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	defer finalize(t)
 	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
 	k, err := db.GetAccountKeys(keys[0].Value)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
@@ -183,6 +206,13 @@ func TestGetKey(t *testing.T) {
 	}
 	defer finalize(t)
 	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
 	db.AddKey(keys[2])
@@ -237,6 +267,13 @@ func TestDeleteKey(t *testing.T) {
 	}
 	defer finalize(t)
 	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
 	db.AddKey(keys[2])
@@ -286,6 +323,13 @@ func TestUpdateKey(t *testing.T) {
 	}
 	defer finalize(t)
 	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
 	keys[0].Type = "write"
@@ -307,7 +351,7 @@ func TestUpdateKey(t *testing.T) {
 	if key.ReaderName != keys[0].ReaderName {
 		t.Errorf("Expected key reader name to be %s, found %s.", keys[0].ReaderName, key.ReaderName)
 	}
-	keys[1].AccountIdentifier = accounts[0] + "200"
+	keys[1].AccountIdentifier = accounts[0].Identifier + 200
 	keys[1].Value = "update-value-test"
 	err = db.UpdateKey(keys[1])
 	if err == nil {

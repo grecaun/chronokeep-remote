@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"chronokeep/remote/auth"
 	"chronokeep/remote/database"
 	"chronokeep/remote/util"
 	"context"
@@ -19,6 +20,11 @@ const (
 	dbPort     = 3306
 	dbDriver   = "mysql"
 )
+
+func testHashPassword(pass string) string {
+	hash, _ := auth.HashPassword(pass)
+	return hash
+}
 
 func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
@@ -80,11 +86,31 @@ func setupOld() (*MySQL, error) {
 				"UNIQUE (name)" +
 				");",
 		},
+		// ACCOUNT TABLE
+		{
+			name: "AccountTable",
+			query: "CREATE TABLE IF NOT EXISTS account(" +
+				"account_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"account_name VARCHAR(100) NOT NULL, " +
+				"account_email VARCHAR(100) NOT NULL, " +
+				"account_password VARCHAR(300) NOT NULL, " +
+				"account_type VARCHAR(20) NOT NULL, " +
+				"account_wrong_pass INT NOT NULL DEFAULT 0, " +
+				"account_locked BOOL DEFAULT FALSE, " +
+				"account_token VARCHAR(1000) NOT NULL DEFAULT '', " +
+				"account_refresh_token VARCHAR(1000) NOT NULL DEFAULT '', " +
+				"account_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"account_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+				"account_deleted BOOL DEFAULT FALSE, " +
+				"UNIQUE(account_email), " +
+				"PRIMARY KEY (account_id)" +
+				");",
+		},
 		// KEY TABLE
 		{
 			name: "KeyTable",
 			query: "CREATE TABLE IF NOT EXISTS api_key(" +
-				"account_id VARCHAR(200) NOT NULL, " +
+				"account_id BIGINT NOT NULL, " +
 				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
@@ -94,7 +120,8 @@ func setupOld() (*MySQL, error) {
 				"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
 				"UNIQUE(key_value), " +
-				"UNIQUE(account_id, reader_name)" +
+				"UNIQUE(account_id, reader_name)," +
+				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");",
 		},
 		// READ TABLE

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p *Postgres) GetReads(account, name string, from, to int64) ([]types.Read, error) {
+func (p *Postgres) GetReads(account int64, name string, from, to int64) ([]types.Read, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (p *Postgres) AddReads(key string, reads []types.Read) ([]types.Read, error
 	return reads, tx.Commit(ctx)
 }
 
-func (p *Postgres) DeleteReads(account, name string, from, to int64) (int64, error) {
+func (p *Postgres) DeleteReads(account int64, name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}

@@ -18,7 +18,7 @@ var (
 // Example types are: read (readonly), delete (read, write, delete), write (read, write)
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
-	AccountIdentifier string     `json:"account_id"`
+	AccountIdentifier int64      `json:"account_id"`
 	Name              string     `json:"name"`
 	Value             string     `json:"value"`
 	Type              string     `json:"type" validate:"required"`

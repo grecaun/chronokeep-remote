@@ -17,7 +17,7 @@ const (
 type Database interface {
 	// Database Base Functions
 	Setup(config *util.Config) error
-	SetSettings(name, value string) error
+	SetSetting(name, value string) error
 	// Account Functions
 	GetAccount(email string) (*types.Account, error)
 	GetAccountByKey(key string) (*types.Account, error)
@@ -35,9 +35,9 @@ type Database interface {
 	UnlockAccount(account types.Account) error
 	UpdateTokens(account types.Account) error
 	// Read Functions
-	GetReads(account, name string, from, to int64) ([]types.Read, error)
-	AddReads(key string, reads []types.Read) error
-	DeleteReads(account, name string, from, to int64) (int64, error)
+	GetReads(account int64, name string, from, to int64) ([]types.Read, error)
+	AddReads(key string, reads []types.Read) ([]types.Read, error)
+	DeleteReads(account int64, name string, from, to int64) (int64, error)
 	DeleteKeyReads(key string) (int64, error)
 	// Key Functions
 	GetAccountKeys(identifier string) ([]types.Key, error)
