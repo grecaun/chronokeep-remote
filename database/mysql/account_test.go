@@ -108,7 +108,6 @@ func TestAddAccount(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error adding account with duplicate email.")
 	}
-	db.dropAccounts()
 }
 
 func TestGetAccount(t *testing.T) {
@@ -191,7 +190,6 @@ func TestGetAccount(t *testing.T) {
 	if dAccount != nil {
 		t.Error("Expected not to find an account but one was found.")
 	}
-	db.dropAccounts()
 }
 
 func TestGetAccounts(t *testing.T) {
@@ -229,7 +227,6 @@ func TestGetAccounts(t *testing.T) {
 	if len(retAccounts) != 7 {
 		t.Errorf("Expected number of accounts is %v but %v were found.", 7, len(retAccounts))
 	}
-	db.dropAccounts()
 }
 
 func TestUpdateAccount(t *testing.T) {
@@ -309,7 +306,6 @@ func TestUpdateAccount(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error adding account with duplicate email.")
 	}
-	db.dropAccounts()
 }
 
 func TestDeleteAccount(t *testing.T) {
@@ -384,7 +380,6 @@ func TestDeleteAccount(t *testing.T) {
 	if err == nil {
 		t.Error("No error found when trying to add a deleted account.")
 	}
-	db.dropAccounts()
 }
 
 func TestResurrectAccount(t *testing.T) {
@@ -424,7 +419,6 @@ func TestResurrectAccount(t *testing.T) {
 	if dAccount == nil {
 		t.Error("Account was not resurrected.")
 	}
-	db.dropAccounts()
 }
 
 func TestGetDeletedAccount(t *testing.T) {
@@ -470,7 +464,6 @@ func TestGetDeletedAccount(t *testing.T) {
 	if dAccount == nil {
 		t.Error("Deleted account not found.")
 	}
-	db.dropAccounts()
 }
 
 func TestChangePassword(t *testing.T) {
@@ -509,7 +502,6 @@ func TestChangePassword(t *testing.T) {
 	if nAccount.Token != "" || nAccount.RefreshToken != "" {
 		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
 	}
-	db.dropAccounts()
 }
 
 func TestChangeEmail(t *testing.T) {
@@ -542,7 +534,6 @@ func TestChangeEmail(t *testing.T) {
 	} else if nAccount.Token != "" || nAccount.RefreshToken != "" {
 		t.Errorf("Expected tokens not to be set. Found Token %v and Refresh Token %v.", nAccount.Token, nAccount.RefreshToken)
 	}
-	db.dropAccounts()
 }
 
 func TestInvalidPassword(t *testing.T) {
@@ -582,7 +573,6 @@ func TestInvalidPassword(t *testing.T) {
 			t.Errorf("wrong password attempts set to %v, should be %v", dAccount.WrongPassAttempts, i)
 		}
 	}
-	db.dropAccounts()
 }
 
 func TestGetAccountByKey(t *testing.T) {
@@ -637,7 +627,6 @@ func TestGetAccountByKey(t *testing.T) {
 	if dAccount.Identifier != nAccount2.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", nAccount2.Identifier, dAccount.Identifier)
 	}
-	db.dropAccounts()
 }
 
 func TestGetAccountByID(t *testing.T) {
@@ -672,7 +661,6 @@ func TestGetAccountByID(t *testing.T) {
 	if dAccount.Identifier != nAccount.Identifier {
 		t.Errorf("Account id expected to be %v but found %v.", nAccount.Identifier, dAccount.Identifier)
 	}
-	db.dropAccounts()
 }
 
 func TestUpdateTokens(t *testing.T) {
@@ -697,7 +685,6 @@ func TestUpdateTokens(t *testing.T) {
 	if dAccount.RefreshToken != nAccount.RefreshToken {
 		t.Errorf("Expected refresh token %v, found %v.", nAccount.RefreshToken, dAccount.RefreshToken)
 	}
-	db.dropAccounts()
 }
 
 func TestValidPassword(t *testing.T) {
@@ -741,7 +728,6 @@ func TestValidPassword(t *testing.T) {
 	if nAccount.WrongPassAttempts == 0 {
 		t.Errorf("Expected wrong password attempts; found %v.", nAccount.WrongPassAttempts)
 	}
-	db.dropAccounts()
 }
 
 func TestUnlockAccount(t *testing.T) {
@@ -772,5 +758,4 @@ func TestUnlockAccount(t *testing.T) {
 	if nAccount.WrongPassAttempts != 0 {
 		t.Errorf("Expected wrong pass attempts to be reset to 0; found %v.", nAccount.WrongPassAttempts)
 	}
-	db.dropAccounts()
 }
