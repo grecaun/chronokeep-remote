@@ -433,8 +433,15 @@ func TestGetDeletedAccount(t *testing.T) {
 	defer finalize(t)
 	setupAccountTests()
 	nAccount, _ := db.AddAccount(accounts[0])
-	db.DeleteAccount(nAccount.Identifier)
 	dAccount, err := db.GetDeletedAccount(nAccount.Email)
+	if err != nil {
+		t.Fatalf("Error getting deleted account %v", err)
+	}
+	if dAccount != nil {
+		t.Errorf("Deleted account found: %v", nAccount.Email)
+	}
+	db.DeleteAccount(nAccount.Identifier)
+	dAccount, err = db.GetDeletedAccount(nAccount.Email)
 	if err != nil {
 		t.Fatalf("Error getting deleted account %v", err)
 	}
@@ -767,5 +774,153 @@ func TestUnlockAccount(t *testing.T) {
 	nAccount, _ = db.GetAccount(nAccount.Email)
 	if nAccount.WrongPassAttempts != 0 {
 		t.Errorf("Expected wrong pass attempts to be reset to 0; found %v.", nAccount.WrongPassAttempts)
+	}
+}
+
+func TestInternalAccount(t *testing.T) {
+	// test nil, nil, nil for get internal account
+	db, finalize, _ := setupTests(t)
+	defer finalize(t)
+	_, err := db.getAccountInternal(nil, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error getting account internal with no values given.")
+	}
+}
+
+func TestBadDatabaseAccount(t *testing.T) {
+	// test bad database connection
+	db := badTestSetup(t)
+	_, err := db.GetAccount("")
+	if err == nil {
+		t.Fatalf("Expected error getting account by email.")
+	}
+	_, err = db.GetAccountByKey("")
+	if err == nil {
+		t.Fatalf("Expected error getting account by key.")
+	}
+	_, err = db.GetAccountByID(0)
+	if err == nil {
+		t.Fatalf("Expected error getting account by id.")
+	}
+	_, err = db.GetAccounts()
+	if err == nil {
+		t.Fatalf("Expected error getting accounts.")
+	}
+	_, err = db.AddAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error adding empty account.")
+	}
+	err = db.DeleteAccount(0)
+	if err == nil {
+		t.Fatalf("Expected error deleting account.")
+	}
+	err = db.ResurrectAccount("")
+	if err == nil {
+		t.Fatalf("Expected error resurrecting account.")
+	}
+	_, err = db.GetDeletedAccount("")
+	if err == nil {
+		t.Fatalf("Expected error getting deleted account.")
+	}
+	err = db.UpdateAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error updating account.")
+	}
+	err = db.ChangePassword("", "", true)
+	if err == nil {
+		t.Fatalf("Expected error changing password.")
+	}
+	err = db.UpdateTokens(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error updating tokens.")
+	}
+	err = db.ChangeEmail("", "")
+	if err == nil {
+		t.Fatalf("Expected error changing email.")
+	}
+	err = db.InvalidPassword(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error setting invalid password.")
+	}
+	err = db.ValidPassword(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error setting valid password.")
+	}
+	err = db.UnlockAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error unlocking account.")
+	}
+	_, err = db.getAccountInternal(nil, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error getting account internal with no values given.")
+	}
+}
+
+func TestNoDatabaseAccount(t *testing.T) {
+	// test whether or not we've connected to a database
+	db := &Postgres{}
+	_, err := db.GetAccount("")
+	if err == nil {
+		t.Fatalf("Expected error getting account by email.")
+	}
+	_, err = db.GetAccountByKey("")
+	if err == nil {
+		t.Fatalf("Expected error getting account by key.")
+	}
+	_, err = db.GetAccountByID(0)
+	if err == nil {
+		t.Fatalf("Expected error getting account by id.")
+	}
+	_, err = db.GetAccounts()
+	if err == nil {
+		t.Fatalf("Expected error getting accounts.")
+	}
+	_, err = db.AddAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error adding empty account.")
+	}
+	err = db.DeleteAccount(0)
+	if err == nil {
+		t.Fatalf("Expected error deleting account.")
+	}
+	err = db.ResurrectAccount("")
+	if err == nil {
+		t.Fatalf("Expected error resurrecting account.")
+	}
+	_, err = db.GetDeletedAccount("")
+	if err == nil {
+		t.Fatalf("Expected error getting deleted account.")
+	}
+	err = db.UpdateAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error updating account.")
+	}
+	err = db.ChangePassword("", "", true)
+	if err == nil {
+		t.Fatalf("Expected error changing password.")
+	}
+	err = db.UpdateTokens(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error updating tokens.")
+	}
+	err = db.ChangeEmail("", "")
+	if err == nil {
+		t.Fatalf("Expected error changing email.")
+	}
+	err = db.InvalidPassword(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error setting invalid password.")
+	}
+	err = db.ValidPassword(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error setting valid password.")
+	}
+	err = db.UnlockAccount(types.Account{})
+	if err == nil {
+		t.Fatalf("Expected error unlocking account.")
+	}
+	_, err = db.getAccountInternal(nil, nil, nil)
+	if err == nil {
+		t.Fatalf("Expected error getting account internal with no values given.")
 	}
 }

@@ -35,10 +35,11 @@ type Database interface {
 	UnlockAccount(account types.Account) error
 	UpdateTokens(account types.Account) error
 	// Read Functions
-	GetReads(account int64, name string, from, to int64) ([]types.Read, error)
+	GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error)
 	AddReads(key string, reads []types.Read) ([]types.Read, error)
-	DeleteReads(account int64, name string, from, to int64) (int64, error)
+	DeleteReads(account int64, reader_name string, from, to int64) (int64, error)
 	DeleteKeyReads(key string) (int64, error)
+	DeleteReaderReads(account int64, reader_name string) (int64, error)
 	// Key Functions
 	GetAccountKeys(identifier string) ([]types.Key, error)
 	GetKey(key string) (*types.Key, error)

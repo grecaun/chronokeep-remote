@@ -26,6 +26,15 @@ func testHashPassword(pass string) string {
 	return hash
 }
 
+func badTestSetup(t *testing.T) *Postgres {
+	t.Log("Setting up bad test variables.")
+	o := Postgres{}
+	config := getTestConfig()
+	config.DBName = "InvalidDatabaseName"
+	o.GetDatabase(config)
+	return &o
+}
+
 func setupTests(t *testing.T) (*Postgres, func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
 	o := Postgres{}
@@ -241,6 +250,84 @@ func TestUpgrade(t *testing.T) {
 	err = db.dropTables()
 	if err != nil {
 		t.Fatalf("error deleting database: %v", err)
+	}
+}
+
+func TestBadDatabase(t *testing.T) {
+	db := &Postgres{}
+	_, err := db.GetDatabase(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &Postgres{}
+	_, err = db.GetDB()
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = badTestSetup(t)
+	err = db.Setup(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error in Setup.")
+	}
+	db = badTestSetup(t)
+	err = db.dropTables()
+	if err == nil {
+		t.Fatal("Expected error dropping tables.")
+	}
+	err = db.SetSetting("", "")
+	if err == nil {
+		t.Fatal("Expected error setting setting.")
+	}
+	err = db.createTables()
+	if err == nil {
+		t.Fatal("Expected error creating tables.")
+	}
+	v := db.checkVersion()
+	if v != -1 {
+		t.Fatal("Expected error getting database.")
+	}
+	err = db.updateTables(0, 0)
+	if err == nil {
+		t.Fatal("Expected error updating tables.")
+	}
+}
+
+func TestNoDatabase(t *testing.T) {
+	db := &Postgres{}
+	_, err := db.GetDatabase(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &Postgres{}
+	_, err = db.GetDB()
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &Postgres{}
+	err = db.Setup(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error in Setup.")
+	}
+	db = &Postgres{}
+	err = db.dropTables()
+	if err == nil {
+		t.Fatal("Expected error dropping tables.")
+	}
+	err = db.SetSetting("", "")
+	if err == nil {
+		t.Fatal("Expected error setting setting.")
+	}
+	err = db.createTables()
+	if err == nil {
+		t.Fatal("Expected error creating tables.")
+	}
+	v := db.checkVersion()
+	if v != -1 {
+		t.Fatal("Expected error getting database.")
+	}
+	err = db.updateTables(0, 0)
+	if err == nil {
+		t.Fatal("Expected error updating tables.")
 	}
 }
 

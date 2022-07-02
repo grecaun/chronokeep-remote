@@ -335,3 +335,93 @@ func TestDeleteKeyReads(t *testing.T) {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
 }
+
+func TestDeleteReaderReads(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupReadsTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
+	db.AddKey(keys[0])
+	db.AddKey(keys[1])
+	count, err := db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].ReaderName)
+	if err != nil {
+		t.Fatalf("error deleting non existant reads: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("count expected to be %v, deleted %v", 0, count)
+	}
+	db.AddReads(keys[0].Value, reads)
+	db.AddReads(keys[1].Value, reads)
+	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].ReaderName)
+	if err != nil {
+		t.Fatalf("error deleting non existant reads: %v", err)
+	}
+	if count != int64(len(reads)) {
+		t.Fatalf("count expected to be %v, deleted %v", 0, count)
+	}
+	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	if len(res) != 0 {
+		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
+	}
+	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].ReaderName, now, now+1000)
+	if len(res) != len(reads) {
+		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
+	}
+}
+
+func TestBadDatabaseRead(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetReads(0, "", 0, 0)
+	if err == nil {
+		t.Fatal("Expected error on get reads.")
+	}
+	_, err = db.AddReads("", make([]types.Read, 0))
+	if err == nil {
+		t.Fatal("Expected error on add reads.")
+	}
+	_, err = db.DeleteReads(0, "", 0, 0)
+	if err == nil {
+		t.Fatal("Expected error on delete reads.")
+	}
+	_, err = db.DeleteKeyReads("")
+	if err == nil {
+		t.Fatal("Expected error on delete key reads.")
+	}
+	_, err = db.DeleteReaderReads(0, "")
+	if err == nil {
+		t.Fatal("Expected error on delete reader reads.")
+	}
+}
+
+func TestNoDatabaseRead(t *testing.T) {
+	db := MySQL{}
+	_, err := db.GetReads(0, "", 0, 0)
+	if err == nil {
+		t.Fatal("Expected error on get reads.")
+	}
+	_, err = db.AddReads("", make([]types.Read, 0))
+	if err == nil {
+		t.Fatal("Expected error on add reads.")
+	}
+	_, err = db.DeleteReads(0, "", 0, 0)
+	if err == nil {
+		t.Fatal("Expected error on delete reads.")
+	}
+	_, err = db.DeleteKeyReads("")
+	if err == nil {
+		t.Fatal("Expected error on delete key reads.")
+	}
+	_, err = db.DeleteReaderReads(0, "")
+	if err == nil {
+		t.Fatal("Expected error on delete reader reads.")
+	}
+}

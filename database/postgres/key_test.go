@@ -362,3 +362,51 @@ func TestUpdateKey(t *testing.T) {
 		t.Errorf("Found key with modified key value: %+v", key)
 	}
 }
+
+func TestBadDatabaseKey(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetAccountKeys("")
+	if err == nil {
+		t.Fatal("Expected error getting account keys.")
+	}
+	_, err = db.GetKey("")
+	if err == nil {
+		t.Fatal("Expected error getting key.")
+	}
+	_, err = db.AddKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error adding key.")
+	}
+	err = db.DeleteKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error deleting key.")
+	}
+	err = db.UpdateKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error updating key.")
+	}
+}
+
+func TestNoDatabaseKey(t *testing.T) {
+	db := Postgres{}
+	_, err := db.GetAccountKeys("")
+	if err == nil {
+		t.Fatal("Expected error getting account keys.")
+	}
+	_, err = db.GetKey("")
+	if err == nil {
+		t.Fatal("Expected error getting key.")
+	}
+	_, err = db.AddKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error adding key.")
+	}
+	err = db.DeleteKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error deleting key.")
+	}
+	err = db.UpdateKey(types.Key{})
+	if err == nil {
+		t.Fatal("Expected error updating key.")
+	}
+}

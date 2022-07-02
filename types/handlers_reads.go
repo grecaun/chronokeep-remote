@@ -27,32 +27,23 @@ type DeleteReadsResponse struct {
 
 // UploadReadsRequest Request structure for uploading reads.
 type UploadReadsRequest struct {
-	Key       string `json:"key"`
-	Overwrite bool   `json:"overwrite"`
-	Count     int    `json:"count"`
-	Reader    string `json:"reader"`
-	Reads     []Read `json:"reads"`
+	Key   string `json:"key"`
+	Count int    `json:"count"`
+	Reads []Read `json:"reads"`
 }
 
 // GetReadsRequest Request structure for a read request, either time based or read index based.
 type GetReadsRequest struct {
-	Key    string `json:"key"`
-	Start  string `json:"start"`
-	End    string `json:"end"`
-	Reader string `json:"reader"`
+	Key        string `json:"key"`
+	ReaderName string `json:"reader"`
+	Start      int64  `json:"start"`
+	End        int64  `json:"end"`
 }
 
-// DeleteReadsRangeRequest Request structure for deletion of reads based upon read index values.
-type DeleteReadsRangeRequest struct {
-	Key    string `json:"key"`
-	Reader string `json:"reader"`
-	Start  string `json:"start"`
-	End    string `json:"end"`
-}
-
-// DeleteReadsRequest Request structure for deletion of reads based upon an array of read index values.
+// DeleteReadsRequest Request structure for deletion of reads based upon read index values.
 type DeleteReadsRequest struct {
-	Key    string   `json:"key"`
-	Reader string   `json:"reader"`
-	Reads  []string `json:"reads"`
+	Key        string `json:"key"`
+	ReaderName string `json:"reader"`
+	Start      *int64 `json:"start"`
+	End        *int64 `json:"end"`
 }

@@ -81,3 +81,19 @@ func TestGetKeyAndAccount(t *testing.T) {
 		t.Errorf("Account expected: %+v; Found %+v;\nKey expected: %+v; Found %+v;", *account2, *mult.Account, keys[1], *mult.Key)
 	}
 }
+
+func TestBadDatabaseMultiGet(t *testing.T) {
+	db := badTestSetup(t)
+	_, err := db.GetKeyAndAccount("")
+	if err == nil {
+		t.Fatal("Expected error on get account and key.")
+	}
+}
+
+func TestNoDatabaseMultiGet(t *testing.T) {
+	db := MySQL{}
+	_, err := db.GetKeyAndAccount("")
+	if err == nil {
+		t.Fatal("Expected error on get account and key.")
+	}
+}

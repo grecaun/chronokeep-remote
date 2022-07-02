@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p *Postgres) GetReads(account int64, name string, from, to int64) ([]types.Read, error) {
+func (p *Postgres) GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (p *Postgres) GetReads(account int64, name string, from, to int64) ([]types
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type FROM read NATURAL JOIN api_key WHERE account_id=$1 AND reader_name=$2 AND seconds>=$3 AND seconds<=$4;",
 		account,
-		name,
+		reader_name,
 		from,
 		toVal,
 	)
@@ -86,7 +86,7 @@ func (p *Postgres) AddReads(key string, reads []types.Read) ([]types.Read, error
 	return reads, tx.Commit(ctx)
 }
 
-func (p *Postgres) DeleteReads(account int64, name string, from, to int64) (int64, error) {
+func (p *Postgres) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}
@@ -102,7 +102,7 @@ func (p *Postgres) DeleteReads(account int64, name string, from, to int64) (int6
 		from,
 		to,
 		account,
-		name,
+		reader_name,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("unable to delete reads: %v", err)
@@ -121,6 +121,25 @@ func (p *Postgres) DeleteKeyReads(key string) (int64, error) {
 		ctx,
 		"DELETE FROM read WHERE key_value=$1;",
 		key,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("unable to delete reads: %v", err)
+	}
+	return res.RowsAffected(), nil
+}
+
+func (p *Postgres) DeleteReaderReads(account int64, reader_name string) (int64, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return 0, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.Exec(
+		ctx,
+		"DELETE FROM read r WHERE EXISTS (SELECT * FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$1 AND a.reader_name=$2);",
+		account,
+		reader_name,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("unable to delete reads: %v", err)

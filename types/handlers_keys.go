@@ -18,18 +18,23 @@ type GetKeysResponse struct {
 	Requests
 */
 
-// GeneralRequest A generalized request struct when only a key is required for the call.
-type GeneralKeyRequest struct {
+// DeleteKeyRequest Struct used for the Delete Key request.
+type DeleteKeyRequest struct {
 	Key string `json:"key"`
 }
 
 // AddKeyRequest Struct used for the Add Key request.
 type AddKeyRequest struct {
-	Identifier string     `json:"identifier"`
-	Key        RequestKey `json:"key"`
+	Email *string    `json:"email"`
+	Key   RequestKey `json:"key"`
 }
 
 // UpdateKeyRequest Struct used for the Update Key request.
 type UpdateKeyRequest struct {
 	Key RequestKey `json:"key"`
+}
+
+// GetKeysRequest Struct used for the Get Keys request.
+type GetKeysRequest struct {
+	Email *string `json:"email"`
 }

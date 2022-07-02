@@ -26,6 +26,15 @@ func testHashPassword(pass string) string {
 	return hash
 }
 
+func badTestSetup(t *testing.T) *MySQL {
+	t.Log("Setting up bad test variables.")
+	o := MySQL{}
+	config := getTestConfig()
+	config.DBName = "InvalidDatabaseName"
+	o.GetDatabase(config)
+	return &o
+}
+
 func setupTests(t *testing.T) (*MySQL, func(t *testing.T), error) {
 	t.Log("Setting up testing database variables.")
 	o := MySQL{}
@@ -227,6 +236,88 @@ func TestUpgrade(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error deleting database: %v", err)
 	}
+}
+
+func TestBadDatabase(t *testing.T) {
+	db := &MySQL{}
+	_, err := db.GetDatabase(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &MySQL{}
+	_, err = db.GetDB()
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = badTestSetup(t)
+	err = db.Setup(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error in Setup.")
+	}
+	db = badTestSetup(t)
+	err = db.dropTables()
+	if err == nil {
+		t.Fatal("Expected error dropping tables.")
+	}
+	err = db.SetSetting("", "")
+	if err == nil {
+		t.Fatal("Expected error setting setting.")
+	}
+	err = db.createTables()
+	if err == nil {
+		t.Fatal("Expected error creating tables.")
+	}
+	v := db.checkVersion()
+	if v != -1 {
+		t.Fatal("Expected error getting database.")
+	}
+	/* There is no updated DB, thus this returns nil.
+	/* remove this comment when update is added
+	err = db.updateTables(0, 0)
+	if err == nil {
+		t.Fatal("Expected error updating tables.")
+	}//*/
+}
+
+func TestNoDatabase(t *testing.T) {
+	db := &MySQL{}
+	_, err := db.GetDatabase(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &MySQL{}
+	_, err = db.GetDB()
+	if err == nil {
+		t.Fatal("Expected error getting database.")
+	}
+	db = &MySQL{}
+	err = db.Setup(&util.Config{})
+	if err == nil {
+		t.Fatal("Expected error in Setup.")
+	}
+	db = &MySQL{}
+	err = db.dropTables()
+	if err == nil {
+		t.Fatal("Expected error dropping tables.")
+	}
+	err = db.SetSetting("", "")
+	if err == nil {
+		t.Fatal("Expected error setting setting.")
+	}
+	err = db.createTables()
+	if err == nil {
+		t.Fatal("Expected error creating tables.")
+	}
+	v := db.checkVersion()
+	if v != -1 {
+		t.Fatal("Expected error getting database.")
+	}
+	/* There is no updated DB, thus this returns nil.
+	/* remove this comment when update is added
+	err = db.updateTables(0, 0)
+	if err == nil {
+		t.Fatal("Expected error updating tables.")
+	}//*/
 }
 
 func getTestConfig() *util.Config {

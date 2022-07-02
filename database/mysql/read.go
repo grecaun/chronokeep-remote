@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (m *MySQL) GetReads(account int64, name string, from, to int64) ([]types.Read, error) {
+func (m *MySQL) GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error) {
 	db, err := m.GetDB()
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func (m *MySQL) GetReads(account int64, name string, from, to int64) ([]types.Re
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type FROM a_read NATURAL JOIN api_key WHERE account_id=? AND reader_name=? AND seconds>=? AND seconds<=?;",
 		account,
-		name,
+		reader_name,
 		from,
 		toVal,
 	)
@@ -90,7 +90,7 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 	return reads, nil
 }
 
-func (m *MySQL) DeleteReads(account int64, name string, from, to int64) (int64, error) {
+func (m *MySQL) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}
@@ -106,7 +106,7 @@ func (m *MySQL) DeleteReads(account int64, name string, from, to int64) (int64, 
 		from,
 		to,
 		account,
-		name,
+		reader_name,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("unable to delete reads: %v", err)
@@ -129,6 +129,29 @@ func (m *MySQL) DeleteKeyReads(key string) (int64, error) {
 		ctx,
 		"DELETE FROM a_read WHERE key_value=?;",
 		key,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("unable to delete reads: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("unable to determine rows affected by delete: %v", err)
+	}
+	return rows, nil
+}
+
+func (m *MySQL) DeleteReaderReads(account int64, reader_name string) (int64, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return 0, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"DELETE r FROM a_read r WHERE EXISTS (SELECT * FROM api_key a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+		account,
+		reader_name,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("unable to delete reads: %v", err)
