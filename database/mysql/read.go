@@ -57,7 +57,11 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	stmt, err := db.PrepareContext(
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to begin transaction: %v", err)
+	}
+	stmt, err := tx.PrepareContext(
 		ctx,
 		"INSERT IGNORE INTO a_read("+
 			"key_value, "+
@@ -83,9 +87,15 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 			read.Type,
 		)
 		if err != nil {
+			tx.Rollback()
 			return outReads, fmt.Errorf("error adding reads to database: %v", err)
 		}
 		outReads = append(outReads, read)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("unable to commit transaction: %v", err)
 	}
 	return reads, nil
 }
