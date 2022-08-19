@@ -42,7 +42,7 @@ type AddAccountRequest struct {
 
 // DeleteAccountRequest Struct used to delete an account.
 type DeleteAccountRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" validate:"email,required"`
 }
 
 // LoginRequest Struct used to login to an account.
@@ -53,8 +53,8 @@ type LoginRequest struct {
 
 // ChangeEmailRequest Struct used to change the email on an account.
 type ChangeEmailRequest struct {
-	OldEmail string `json:"old_email"`
-	NewEmail string `json:"new_email"`
+	OldEmail string `json:"old_email" validate:"email,required"`
+	NewEmail string `json:"new_email" validate:"email,required"`
 }
 
 // RefreshTokenRequest Struct used to request a fresh token.

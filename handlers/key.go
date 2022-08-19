@@ -2,23 +2,29 @@ package handlers
 
 import (
 	"chronokeep/remote/types"
+	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 )
 
 func (h Handler) GetKeys(c echo.Context) error {
 	var request types.GetKeysRequest
-	_ = c.Bind(&request)
+	err := c.Bind(&request)
+	if err != nil {
+		return getAPIError(c, http.StatusBadRequest, "Bad Request", err)
+	}
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
 	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Invalid User", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not admin / ownership error"))
 	}
 	email := account.Email
 	if request.Email != nil {
@@ -41,28 +47,31 @@ func (h Handler) GetKeys(c echo.Context) error {
 }
 
 func (h Handler) AddKey(c echo.Context) error {
-	log.Info("Adding new Key; Binding request body to key struct.")
+	// Adding new Key; Binding request body to key struct.
 	var request types.AddKeyRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
 	}
-	log.Info("Verifying token.")
+	// Verifying token.
 	account, err := verifyToken(c.Request())
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
-	log.Info("Validating key.")
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	// Validating key.
 	if err := request.Key.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Field(s)", err)
 	}
-	log.Info("Checking for admin or ownership.")
+	// Checking for admin or ownership.
 	if account.Type != "admin" && request.Email != nil && account.Email != *request.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not admin / ownership error"))
 	}
 	// If email is set we add a key to that account, otherwise add it to the calling person's account.
 	accountid := account.Identifier
 	if request.Email != nil {
-		log.Info("Getting key account holder for id value.")
+		// Getting key account holder for id value.
 		keyAccount, err := database.GetAccount(*request.Email)
 		if err != nil {
 			return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Key Account", err)
@@ -72,7 +81,7 @@ func (h Handler) AddKey(c echo.Context) error {
 		}
 		accountid = keyAccount.Identifier
 	}
-	log.Info("Adding key to database.")
+	// Adding key to database.
 	// Create new API Key for our key to add.
 	newKey, err := uuid.NewRandom()
 	if err != nil {
@@ -103,6 +112,12 @@ func (h Handler) DeleteKey(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
+	if len(request.Key) < 1 {
+		return getAPIError(c, http.StatusBadRequest, "Bad Request", errors.New("no key specified"))
+	}
 	// Get Key to be deleted.
 	multiKey, err := database.GetKeyAndAccount(request.Key)
 	if err != nil {
@@ -113,7 +128,7 @@ func (h Handler) DeleteKey(c echo.Context) error {
 	}
 	// Deny access to non admins who do not own the key
 	if account.Type != "admin" && account.Email != multiKey.Account.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not an admin / ownership error"))
 	}
 	err = database.DeleteKey(*multiKey.Key)
 	if err != nil {
@@ -131,6 +146,9 @@ func (h Handler) UpdateKey(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusUnauthorized, "Unauthorized Token", err)
 	}
+	if account.Locked {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("account locked"))
+	}
 	if err := request.Key.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Field(s)", err)
 	}
@@ -144,7 +162,7 @@ func (h Handler) UpdateKey(c echo.Context) error {
 	}
 	// Deny access to non admins who do not own the key
 	if account.Type != "admin" && account.Email != keyAccount.Email {
-		return getAPIError(c, http.StatusUnauthorized, "Not an Admin / Ownership Error", nil)
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("not an admin / ownership error"))
 	}
 	err = database.UpdateKey(request.Key.ToKey())
 	if err != nil {

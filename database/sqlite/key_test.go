@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"chronokeep/remote/types"
@@ -385,7 +385,7 @@ func TestBadDatabaseKey(t *testing.T) {
 }
 
 func TestNoDatabaseKey(t *testing.T) {
-	db := MySQL{}
+	db := SQLite{}
 	_, err := db.GetAccountKeys("")
 	if err == nil {
 		t.Fatal("Expected error getting account keys.")

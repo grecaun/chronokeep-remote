@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"chronokeep/remote/types"
@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
-	db, err := m.GetDB()
+func (s *SQLite) GetAccountKeys(email string) ([]types.Key, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 	return outKeys, nil
 }
 
-func (m *MySQL) GetKey(key string) (*types.Key, error) {
-	db, err := m.GetDB()
+func (s *SQLite) GetKey(key string) (*types.Key, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func (m *MySQL) GetKey(key string) (*types.Key, error) {
 	return &outKey, nil
 }
 
-func (m *MySQL) AddKey(key types.Key) (*types.Key, error) {
-	db, err := m.GetDB()
+func (s *SQLite) AddKey(key types.Key) (*types.Key, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +115,8 @@ func (m *MySQL) AddKey(key types.Key) (*types.Key, error) {
 	}, nil
 }
 
-func (m *MySQL) DeleteKey(key types.Key) error {
-	db, err := m.GetDB()
+func (s *SQLite) DeleteKey(key types.Key) error {
+	db, err := s.GetDB()
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (m *MySQL) DeleteKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET key_deleted=TRUE WHERE key_value=?;",
+		"UPDATE api_key SET key_deleted=TRUE WHERE key_deleted=FALSE AND key_value=?;",
 		key.Value,
 	)
 	if err != nil {
@@ -140,8 +140,8 @@ func (m *MySQL) DeleteKey(key types.Key) error {
 	return nil
 }
 
-func (m *MySQL) UpdateKey(key types.Key) error {
-	db, err := m.GetDB()
+func (s *SQLite) UpdateKey(key types.Key) error {
+	db, err := s.GetDB()
 	if err != nil {
 		return err
 	}

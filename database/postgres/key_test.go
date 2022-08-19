@@ -151,7 +151,7 @@ func TestGetAccountKeys(t *testing.T) {
 	keys[2].AccountIdentifier = account2.Identifier
 	keys[3].AccountIdentifier = account2.Identifier
 	keys[4].AccountIdentifier = account1.Identifier
-	k, err := db.GetAccountKeys(keys[0].Value)
+	k, err := db.GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -160,21 +160,21 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	db.AddKey(keys[0])
 	db.AddKey(keys[2])
-	k, err = db.GetAccountKeys(keys[0].Value)
+	k, err = db.GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 1 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
 	}
-	k, err = db.GetAccountKeys(keys[1].Value)
+	k, err = db.GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 0 {
 		t.Errorf("Expected no keys found for account but found %v keys.", len(k))
 	}
-	k, err = db.GetAccountKeys(keys[2].Value)
+	k, err = db.GetAccountKeys(account2.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
@@ -183,14 +183,14 @@ func TestGetAccountKeys(t *testing.T) {
 	}
 	db.AddKey(keys[1])
 	db.AddKey(keys[3])
-	k, err = db.GetAccountKeys(keys[1].Value)
+	k, err = db.GetAccountKeys(account1.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}
 	if len(k) != 2 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
 	}
-	k, err = db.GetAccountKeys(keys[3].Value)
+	k, err = db.GetAccountKeys(account2.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}

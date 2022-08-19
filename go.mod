@@ -12,6 +12,7 @@ require (
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/lib/pq v1.10.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-sqlite3 v1.14.15
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect

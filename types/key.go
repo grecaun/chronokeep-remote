@@ -2,15 +2,10 @@ package types
 
 import (
 	"errors"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
-)
-
-var (
-	hostRegex = regexp.MustCompile(`^https?:\/\/([^\/:]+)`)
 )
 
 // Key outline for data stored about an PI key
@@ -48,6 +43,9 @@ func (k *Key) Equal(other *Key) bool {
 func (k *Key) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
+	case "default":
+		k.Type = "read"
+		valid = true
 	case "read":
 		valid = true
 	case "write":
@@ -66,6 +64,9 @@ func (k *Key) Validate(validate *validator.Validate) error {
 func (k RequestKey) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
+	case "default":
+		k.Type = "read"
+		valid = true
 	case "read":
 		valid = true
 	case "write":
@@ -86,23 +87,6 @@ func (k Key) Expired() bool {
 		return false
 	}
 	return k.ValidUntil.Before(time.Now())
-}
-
-// IsAllowed Reports whether a key is allowed to be used based on host name.
-func (k Key) IsAllowed(host string) bool {
-	if len(k.ReaderName) < 1 {
-		return true
-	}
-	match := hostRegex.FindStringSubmatch(host)
-	if len(match) >= 2 {
-		allowed := strings.Split(k.ReaderName, ",")
-		for _, a := range allowed {
-			if match[1] == a {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 // ToKey Returns a Key struct with proper information.

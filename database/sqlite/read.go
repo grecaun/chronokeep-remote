@@ -1,4 +1,4 @@
-package mysql
+package sqlite
 
 import (
 	"chronokeep/remote/types"
@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func (m *MySQL) GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error) {
-	db, err := m.GetDB()
+func (s *SQLite) GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +50,8 @@ func (m *MySQL) GetReads(account int64, reader_name string, from, to int64) ([]t
 	return outReads, nil
 }
 
-func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
-	db, err := m.GetDB()
+func (s *SQLite) AddReads(key string, reads []types.Read) ([]types.Read, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 	}
 	stmt, err := tx.PrepareContext(
 		ctx,
-		"INSERT IGNORE INTO a_read("+
+		"INSERT OR IGNORE INTO a_read("+
 			"key_value, "+
 			"identifier, "+
 			"seconds, "+
@@ -100,11 +100,11 @@ func (m *MySQL) AddReads(key string, reads []types.Read) ([]types.Read, error) {
 	return reads, nil
 }
 
-func (m *MySQL) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
+func (s *SQLite) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}
-	db, err := m.GetDB()
+	db, err := s.GetDB()
 	if err != nil {
 		return 0, err
 	}
@@ -112,7 +112,7 @@ func (m *MySQL) DeleteReads(account int64, reader_name string, from, to int64) (
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"DELETE r FROM a_read r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS (SELECT * FROM api_key a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+		"DELETE FROM a_read AS r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS (SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
 		from,
 		to,
 		account,
@@ -128,8 +128,8 @@ func (m *MySQL) DeleteReads(account int64, reader_name string, from, to int64) (
 	return rows, nil
 }
 
-func (m *MySQL) DeleteKeyReads(key string) (int64, error) {
-	db, err := m.GetDB()
+func (s *SQLite) DeleteKeyReads(key string) (int64, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return 0, err
 	}
@@ -150,8 +150,8 @@ func (m *MySQL) DeleteKeyReads(key string) (int64, error) {
 	return rows, nil
 }
 
-func (m *MySQL) DeleteReaderReads(account int64, reader_name string) (int64, error) {
-	db, err := m.GetDB()
+func (s *SQLite) DeleteReaderReads(account int64, reader_name string) (int64, error) {
+	db, err := s.GetDB()
 	if err != nil {
 		return 0, err
 	}
@@ -159,7 +159,7 @@ func (m *MySQL) DeleteReaderReads(account int64, reader_name string) (int64, err
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"DELETE r FROM a_read r WHERE EXISTS (SELECT * FROM api_key a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+		"DELETE FROM a_read AS r WHERE EXISTS (SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
 		account,
 		reader_name,
 	)

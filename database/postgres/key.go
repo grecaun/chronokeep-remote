@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p *Postgres) GetAccountKeys(key string) ([]types.Key, error) {
+func (p *Postgres) GetAccountKeys(email string) ([]types.Key, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -17,8 +17,8 @@ func (p *Postgres) GetAccountKeys(key string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.Query(
 		ctx,
-		"SELECT account_id, key_name, key_value, key_type, reader_name, valid_until FROM api_key a WHERE key_deleted=FALSE AND EXISTS (SELECT * FROM api_key b WHERE a.account_id=b.account_id AND b.key_value=$1);",
-		key,
+		"SELECT account_id, key_name, key_value, key_type, reader_name, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
+		email,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving key: %v", err)
