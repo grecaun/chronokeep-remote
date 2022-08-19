@@ -42,7 +42,8 @@ type Database interface {
 	DeleteKeyReads(key string) (int64, error)
 	DeleteReaderReads(account int64, reader_name string) (int64, error)
 	// Key Functions
-	GetAccountKeys(identifier string) ([]types.Key, error)
+	GetAccountKeys(email string) ([]types.Key, error)
+	GetAccountKeysByKey(key string) ([]types.Key, error)
 	GetKey(key string) (*types.Key, error)
 	AddKey(key types.Key) (*types.Key, error)
 	DeleteKey(key types.Key) error

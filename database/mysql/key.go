@@ -43,6 +43,42 @@ func (m *MySQL) GetAccountKeys(email string) ([]types.Key, error) {
 	return outKeys, nil
 }
 
+func (m *MySQL) GetAccountKeysByKey(key string) ([]types.Key, error) {
+	db, err := m.GetDB()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.QueryContext(
+		ctx,
+		"SELECT account_id, key_name, key_value, key_type, reader_name, valid_until FROM api_key a WHERE key_deleted=FALSE AND "+
+			"EXISTS (SELECT * FROM api_key b WHERE a.account_id=b.account_id AND b.key_value=?);",
+		key,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving key: %v", err)
+	}
+	defer res.Close()
+	var outKeys []types.Key
+	for res.Next() {
+		var key types.Key
+		err := res.Scan(
+			&key.AccountIdentifier,
+			&key.Name,
+			&key.Value,
+			&key.Type,
+			&key.ReaderName,
+			&key.ValidUntil,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error getting key: %v", err)
+		}
+		outKeys = append(outKeys, key)
+	}
+	return outKeys, nil
+}
+
 func (m *MySQL) GetKey(key string) (*types.Key, error) {
 	db, err := m.GetDB()
 	if err != nil {

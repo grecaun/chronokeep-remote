@@ -167,13 +167,6 @@ func TestGetAccountKeys(t *testing.T) {
 	if len(k) != 1 {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
 	}
-	k, err = db.GetAccountKeys(account1.Email)
-	if err != nil {
-		t.Fatalf("Error getting account keys: %v", err)
-	}
-	if len(k) != 0 {
-		t.Errorf("Expected no keys found for account but found %v keys.", len(k))
-	}
 	k, err = db.GetAccountKeys(account2.Email)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
@@ -191,6 +184,68 @@ func TestGetAccountKeys(t *testing.T) {
 		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
 	}
 	k, err = db.GetAccountKeys(account2.Email)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 2 {
+		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
+	}
+}
+
+func TestGetAccountKeysByKey(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupKeyTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
+	k, err := db.GetAccountKeysByKey(keys[0].Value)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 0 {
+		t.Errorf("Expected no keys found for account but found %v keys.", len(k))
+	}
+	db.AddKey(keys[0])
+	db.AddKey(keys[2])
+	k, err = db.GetAccountKeysByKey(keys[0].Value)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 1 {
+		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
+	}
+	k, err = db.GetAccountKeysByKey(keys[1].Value)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 0 {
+		t.Errorf("Expected no keys found for account but found %v keys.", len(k))
+	}
+	k, err = db.GetAccountKeysByKey(keys[2].Value)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 1 {
+		t.Errorf("Expected %v keys found for account but found %v keys.", 1, len(k))
+	}
+	db.AddKey(keys[1])
+	db.AddKey(keys[3])
+	k, err = db.GetAccountKeysByKey(keys[1].Value)
+	if err != nil {
+		t.Fatalf("Error getting account keys: %v", err)
+	}
+	if len(k) != 2 {
+		t.Errorf("Expected %v keys found for account but found %v keys.", 2, len(k))
+	}
+	k, err = db.GetAccountKeysByKey(keys[3].Value)
 	if err != nil {
 		t.Fatalf("Error getting account keys: %v", err)
 	}

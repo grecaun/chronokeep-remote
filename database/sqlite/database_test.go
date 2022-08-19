@@ -120,101 +120,29 @@ func setupOld() (*SQLite, error) {
 				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
-				"allowed_hosts TEXT, " +
+				"reader_name VARCHAR(100) NOT NULL, " +
 				"valid_until DATETIME DEFAULT NULL, " +
 				"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"key_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(key_value), " +
+				"UNIQUE(account_id, reader_name), " +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");",
 		},
-		// EVENT TABLE
+		// READ TABLE
 		{
-			name: "EventTable",
-			query: "CREATE TABLE IF NOT EXISTS event(" +
-				"event_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-				"account_id BIGINT NOT NULL, " +
-				"event_name VARCHAR(100) NOT NULL, " +
-				"slug VARCHAR(20) NOT NULL, " +
-				"website VARCHAR(200), " +
-				"image VARCHAR(200), " +
-				"contact_email VARCHAR(100), " +
-				"access_restricted BOOL DEFAULT FALSE, " +
-				"event_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"event_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-				"event_deleted BOOL DEFAULT FALSE, " +
-				"event_type VARCHAR(20) DEFAULT 'distance', " +
-				"UNIQUE(event_name), " +
-				"UNIQUE(slug)," +
-				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
-				");",
-		},
-		// EVENT YEAR TABLE
-		{
-			name: "EventYearTable",
-			query: "CREATE TABLE IF NOT EXISTS event_year(" +
-				"event_year_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-				"event_id BIGINT NOT NULL, " +
-				"year VARCHAR(20) NOT NULL, " +
-				"date_time DATETIME NOT NULL, " +
-				"live BOOL DEFAULT FALSE, " +
-				"year_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"year_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-				"year_deleted BOOL DEFAULT FALSE, " +
-				"CONSTRAINT year_slug UNIQUE (event_id, year)," +
-				"FOREIGN KEY (event_id) REFERENCES event(event_id)" +
-				");",
-		},
-		// PERSON TABLE
-		{
-			name: "PersonTable",
-			query: "CREATE TABLE IF NOT EXISTS person(" +
-				"person_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-				"event_year_id BIGINT NOT NULL, " +
-				"bib VARCHAR(100) NOT NULL, " +
-				"first VARCHAR(100) NOT NULL, " +
-				"last VARCHAR(100) NOT NULL, " +
-				"age INT NOT NULL, " +
-				"gender CHAR(1) NOT NULL, " +
-				"age_group VARCHAR(200), " +
-				"distance VARCHAR(200) NOT NULL, " +
-				"CONSTRAINT one_person UNIQUE (event_year_id, bib), " +
-				"FOREIGN KEY (event_year_id) REFERENCES event_year(event_year_id)" +
-				");",
-		},
-		// RESULT TABLE
-		{
-			name: "ResultTable",
-			query: "CREATE TABLE IF NOT EXISTS result(" +
-				"person_id BIGINT NOT NULL, " +
-				"seconds INT DEFAULT 0, " +
-				"milliseconds INT DEFAULT 0, " +
-				"chip_seconds INT DEFAULT 0, " +
-				"chip_milliseconds INT DEFAULT 0, " +
-				"segment VARCHAR(500), " +
-				"location VARCHAR(500), " +
-				"occurence INT DEFAULT -1, " +
-				"ranking INT DEFAULT -1, " +
-				"age_ranking INT DEFAULT -1, " +
-				"gender_ranking INT DEFAULT -1, " +
-				"finish BOOL DEFAULT TRUE, " +
-				"result_type INT DEFAULT 0, " +
-				"result_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-				"result_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-				"CONSTRAINT one_occurrence_res UNIQUE (person_id, location, occurence)," +
-				"FOREIGN KEY (person_id) REFERENCES person(person_id)" +
-				");",
-		},
-		// RECORD TABLE
-		{
-			name: "RecordTable",
-			query: "CREATE TABLE IF NOT EXISTS call_record(" +
-				"account_id BIGINT NOT NULL, " +
-				"time BIGINT NOT NULL, " +
-				"count INT DEFAULT 0, " +
-				"CONSTRAINT account_time UNIQUE (account_id, time)," +
-				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
+			name: "ReadTable",
+			query: "CREATE TABLE IF NOT EXISTS a_read(" +
+				"key_value VARCHAR(100) NOT NULL, " +
+				"identifier VARCHAR(100) NOT NULL, " +
+				"seconds BIGINT NOT NULL DEFAULT 0, " +
+				"milliseconds INT NOT NULL DEFAULT 0, " +
+				"ident_type VARCHAR(25) NOT NULL DEFAULT 'chip', " +
+				"type VARCHAR(25) NOT NULL DEFAULT '', " +
+				"read_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"UNIQUE(key_value, identifier, seconds, milliseconds, ident_type), " +
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +
 				");",
 		},
 		// UPDATE ACCOUNT FUNC
@@ -235,33 +163,6 @@ func setupOld() (*SQLite, error) {
 				"    UPDATE api_key SET key_updated_at=CURRENT_TIMESTAMP WHERE key_value=key_value;" +
 				"END;",
 		},
-		// UPDATE EVENT FUNC
-		{
-			name: "UpdateEventFunc",
-			query: "CREATE TRIGGER UpdateEventTime UPDATE OF account_id, event_name, slug, website, image, " +
-				"contact_email, access_restricted, event_deleted, event_type ON event " +
-				"BEGIN" +
-				"    UPDATE event SET event_updated_at=CURRENT_TIMESTAMP WHERE event_id=event_id;" +
-				"END;",
-		},
-		// UPDATE EVENT YEAR FUNC
-		{
-			name: "UpdateEventYearFunc",
-			query: "CREATE TRIGGER UpdateEventYearTime UPDATE OF year, date_time, live, year_deleted ON event_year " +
-				"BEGIN" +
-				"    UPDATE event_year SET year_updated_at=CURRENT_TIMESTAMP WHERE event_year_id=event_year_id;" +
-				"END;",
-		},
-		// UPDATE RESULT FUNC
-		{
-			name: "UpdateResultFunc",
-			query: "CREATE TRIGGER UpdateResultTime UPDATE OF person_id, seconds, milliseconds, chip_seconds, " +
-				"chip_milliseconds, segment, location, occurence, ranking, age_ranking, gender_ranking, finish, " +
-				"result_type ON result " +
-				"BEGIN" +
-				"    UPDATE result SET result_updated_at=CURRENT_TIMESTAMP WHERE person_id=person_id AND location=location AND occurence=occurence;" +
-				"END;",
-		},
 	}
 
 	// Get a context and cancel function to create our tables, defer the cancel until we're done.
@@ -275,7 +176,7 @@ func setupOld() (*SQLite, error) {
 		}
 	}
 
-	o.SetSetting("version", "5")
+	o.SetSetting("version", "1")
 
 	return &o, nil
 }
@@ -340,10 +241,10 @@ func TestUpgrade(t *testing.T) {
 	if db == nil || db.db == nil {
 		t.Fatalf("db variable not set")
 	}
-	// Verify version 5
+	// Verify version 1
 	version := db.checkVersion()
-	if version != 5 {
-		t.Fatalf("Version set to '%v' expected '5'.", version)
+	if version != 1 {
+		t.Fatalf("Version set to '%v' expected '1'.", version)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()
