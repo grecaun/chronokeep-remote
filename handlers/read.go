@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"chronokeep/remote/types"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -36,7 +38,7 @@ func (h Handler) GetReads(c echo.Context) error {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Reads", err)
 	}
 	return c.JSON(http.StatusOK, types.GetReadsResponse{
-		Count: len(reads),
+		Count: int64(len(reads)),
 		Reads: reads,
 	})
 }
@@ -68,13 +70,24 @@ func (h Handler) AddReads(c echo.Context) error {
 	if mkey.Key.Expired() {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
+	// Check to ensure a write/delete key
+	if mkey.Key.Type != "write" && mkey.Key.Type != "delete" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("read key attempting to write"))
+	}
+	// validate read data
+	upload := make([]types.Read, 0)
+	for _, r := range request.Reads {
+		if err := r.Validate(h.validate); err == nil {
+			upload = append(upload, r)
+		}
+	}
 	// update reads
-	uploaded, err := database.AddReads(mkey.Key.Value, request.Reads)
+	uploaded, err := database.AddReads(mkey.Key.Value, upload)
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Adding Keys to Database", err)
 	}
 	return c.JSON(http.StatusOK, types.UploadReadsResponse{
-		Count: len(uploaded),
+		Count: int64(len(uploaded)),
 	})
 }
 
@@ -106,11 +119,20 @@ func (h Handler) DeleteReads(c echo.Context) error {
 	if mkey.Key.Expired() {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
-	// delete reads
-	if request.Start != nil && request.End != nil {
-		database.DeleteReads(mkey.Account.Identifier, request.ReaderName, *request.Start, *request.End)
-	} else {
-		database.DeleteReaderReads(mkey.Account.Identifier, request.ReaderName)
+	if mkey.Key.Type != "delete" {
+		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("attempt to delete with read/write key"))
 	}
-	return c.NoContent(http.StatusNotImplemented)
+	// delete reads
+	var count int64
+	if request.Start != nil && request.End != nil {
+		count, err = database.DeleteReads(mkey.Account.Identifier, request.ReaderName, *request.Start, *request.End)
+	} else {
+		count, err = database.DeleteReaderReads(mkey.Account.Identifier, request.ReaderName)
+	}
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Reads", fmt.Errorf("delete returned error: %v", err))
+	}
+	return c.JSON(http.StatusOK, types.UploadReadsResponse{
+		Count: count,
+	})
 }

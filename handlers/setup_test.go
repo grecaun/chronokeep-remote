@@ -6,6 +6,7 @@ import (
 	"chronokeep/remote/types"
 	"chronokeep/remote/util"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -60,7 +61,17 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	if err != nil {
 		t.Fatalf("Unexpected error adding accounts: %v", err)
 	}
-	t.Log("Adding Keys.")
+	t.Log("Adding Keys and reads.")
+	reads := make([]types.Read, 0)
+	for i := 0; i < 300; i++ {
+		reads = append(reads, types.Read{
+			Identifier:   strconv.Itoa(1000 + i),
+			Seconds:      int64(25 * i),
+			Milliseconds: 0,
+			IdentType:    "chip",
+			Type:         "reader",
+		})
+	}
 	// add keys, one expired, one with a timer, one write, one read, one delete, two different accounts
 	times := []time.Time{
 		time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
@@ -146,6 +157,15 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 		}
 		if k == nil {
 			t.Errorf("Error adding key: %v -- %v : %v", key, key.AccountIdentifier, key.ReaderName)
+		} else {
+			t.Logf("Adding reads for key: %v", k.Value)
+			r, err := database.AddReads(k.Value, reads)
+			if err != nil {
+				t.Errorf("Error adding reads: %v", err)
+			}
+			if len(r) < 1 {
+				t.Errorf("Keys not returned on add read call.")
+			}
 		}
 	}
 	output.keys[output.accounts[0].Email], err = database.GetAccountKeys(output.accounts[0].Email)
@@ -156,8 +176,6 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	if err != nil {
 		t.Fatalf("Unexptected error getting keys: %v", err)
 	}
-	// add reads //->//
-	t.Log("Adding reads.")
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
