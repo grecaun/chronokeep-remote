@@ -11,9 +11,12 @@ type Handler struct {
 }
 
 func (h Handler) Bind(group *echo.Group) {
-	group.GET("/read", h.GetReads)
-	group.POST("/read/add", h.AddReads)
-	group.DELETE("/read/delete", h.DeleteReads)
+	// Read handlers
+	group.GET("/reads", h.GetReads)
+	group.POST("/reads/add", h.AddReads)
+	group.DELETE("/reads/delete", h.DeleteReads)
+	// Reader handler(s)
+	group.GET("/readers", h.GetReaders)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {

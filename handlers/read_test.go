@@ -13,7 +13,7 @@ import (
 )
 
 func TestGetReads(t *testing.T) {
-	// POST, /reads
+	// GET, /reads
 	variables, finalize := setupTests(t)
 	defer finalize(t)
 	e := echo.New()
@@ -26,7 +26,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request := httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request := httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	response := httptest.NewRecorder()
 	c := e.NewContext(request, response)
@@ -35,7 +35,7 @@ func TestGetReads(t *testing.T) {
 	}
 	// Test expired key
 	t.Log("Testing expired key.")
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["expired"])
 	response = httptest.NewRecorder()
@@ -45,7 +45,7 @@ func TestGetReads(t *testing.T) {
 	}
 	// Test invalid key
 	t.Log("Testing invalid key.")
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer not-a-valid-key")
 	response = httptest.NewRecorder()
@@ -55,7 +55,7 @@ func TestGetReads(t *testing.T) {
 	}
 	// Test invalid authorization header
 	t.Log("Testing invalid authorization header.")
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "not-a-valid-auth-header")
 	response = httptest.NewRecorder()
@@ -65,7 +65,7 @@ func TestGetReads(t *testing.T) {
 	}
 	// Test wrong content type
 	t.Log("Testing wrong content type.")
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMETextHTML)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -75,7 +75,7 @@ func TestGetReads(t *testing.T) {
 	}
 	// Test bad request
 	t.Log("Testing bad request.")
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader("////"))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader("////"))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -91,7 +91,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -112,7 +112,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -135,7 +135,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -160,7 +160,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -185,7 +185,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
@@ -210,7 +210,7 @@ func TestGetReads(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error encoding request body into json object: %v", err)
 	}
-	request = httptest.NewRequest(http.MethodPost, "/reads", strings.NewReader(string(body)))
+	request = httptest.NewRequest(http.MethodGet, "/reads", strings.NewReader(string(body)))
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["read"])
 	response = httptest.NewRecorder()
