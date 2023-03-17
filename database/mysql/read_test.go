@@ -88,6 +88,9 @@ func setupReadsTests() {
 				Milliseconds: 600,
 				IdentType:    "chip",
 				Type:         "reader",
+				Antenna:      2,
+				Reader:       "test",
+				RSSI:         "-50",
 			},
 			{
 				Identifier:   "1",
@@ -95,6 +98,9 @@ func setupReadsTests() {
 				Milliseconds: 20,
 				IdentType:    "chip",
 				Type:         "reader",
+				Antenna:      2,
+				Reader:       "test",
+				RSSI:         "-50",
 			},
 			{
 				Identifier:   "15",
@@ -162,6 +168,17 @@ func TestAddReads(t *testing.T) {
 	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
+	}
+	for _, outer := range reads {
+		found := false
+		for _, inner := range res {
+			if outer.Equals(&inner) {
+				found = true
+			}
+		}
+		if found == false {
+			t.Fatalf("Expected to find a read added.")
+		}
 	}
 	if len(res) != len(reads) {
 		t.Errorf("Expected %v reads to be returned, %v returned.", len(reads), len(res))

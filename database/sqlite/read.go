@@ -21,7 +21,9 @@ func (s *SQLite) GetReads(account int64, reader_name string, from, to int64) ([]
 	}
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type FROM a_read NATURAL JOIN api_key WHERE account_id=? AND reader_name=? AND seconds>=? AND seconds<=?;",
+		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna,"+
+			" reader, rssi FROM a_read NATURAL JOIN api_key WHERE account_id=? AND "+
+			"reader_name=? AND seconds>=? AND seconds<=?;",
 		account,
 		reader_name,
 		from,
@@ -41,6 +43,9 @@ func (s *SQLite) GetReads(account int64, reader_name string, from, to int64) ([]
 			&read.Milliseconds,
 			&read.IdentType,
 			&read.Type,
+			&read.Antenna,
+			&read.Reader,
+			&read.RSSI,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting read: %v", err)
@@ -69,7 +74,21 @@ func (s *SQLite) AddReads(key string, reads []types.Read) ([]types.Read, error) 
 			"seconds, "+
 			"milliseconds, "+
 			"ident_type, "+
-			"type) VALUES (?, ?, ?, ?, ?, ?);",
+			"type, "+
+			"antenna, "+
+			"reader, "+
+			"rssi"+
+			") VALUES ("+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?, "+
+			"?"+
+			");",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare statement for read add: %v", err)
@@ -85,6 +104,9 @@ func (s *SQLite) AddReads(key string, reads []types.Read) ([]types.Read, error) 
 			read.Milliseconds,
 			read.IdentType,
 			read.Type,
+			read.Antenna,
+			read.Reader,
+			read.RSSI,
 		)
 		if err != nil {
 			tx.Rollback()
@@ -112,7 +134,9 @@ func (s *SQLite) DeleteReads(account int64, reader_name string, from, to int64) 
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"DELETE FROM a_read AS r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS (SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+		"DELETE FROM a_read AS r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS "+
+			"(SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND "+
+			"a.account_id=? AND a.reader_name=?);",
 		from,
 		to,
 		account,
@@ -159,7 +183,8 @@ func (s *SQLite) DeleteReaderReads(account int64, reader_name string) (int64, er
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"DELETE FROM a_read AS r WHERE EXISTS (SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+		"DELETE FROM a_read AS r WHERE EXISTS (SELECT * FROM api_key AS a WHERE "+
+			"r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
 		account,
 		reader_name,
 	)

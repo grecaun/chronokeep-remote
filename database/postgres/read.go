@@ -21,7 +21,9 @@ func (p *Postgres) GetReads(account int64, reader_name string, from, to int64) (
 	}
 	res, err := db.Query(
 		ctx,
-		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type FROM read NATURAL JOIN api_key WHERE account_id=$1 AND reader_name=$2 AND seconds>=$3 AND seconds<=$4;",
+		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna,"+
+			" reader, rssi FROM read NATURAL JOIN api_key WHERE account_id=$1 AND "+
+			"reader_name=$2 AND seconds>=$3 AND seconds<=$4;",
 		account,
 		reader_name,
 		from,
@@ -41,6 +43,9 @@ func (p *Postgres) GetReads(account int64, reader_name string, from, to int64) (
 			&read.Milliseconds,
 			&read.IdentType,
 			&read.Type,
+			&read.Antenna,
+			&read.Reader,
+			&read.RSSI,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error getting read: %v", err)
@@ -70,7 +75,21 @@ func (p *Postgres) AddReads(key string, reads []types.Read) ([]types.Read, error
 				"seconds, "+
 				"milliseconds, "+
 				"ident_type, "+
-				"type) VALUES ($1, $2, $3, $4, $5, $6) "+
+				"type, "+
+				"antenna, "+
+				"reader, "+
+				"rssi"+
+				") VALUES ("+
+				"$1, "+
+				"$2, "+
+				"$3, "+
+				"$4, "+
+				"$5, "+
+				"$6, "+
+				"$7, "+
+				"$8, "+
+				"$9 "+
+				") "+
 				"ON CONFLICT(key_value, identifier, seconds, milliseconds, ident_type) DO NOTHING;",
 			key,
 			read.Identifier,
@@ -78,6 +97,9 @@ func (p *Postgres) AddReads(key string, reads []types.Read) ([]types.Read, error
 			read.Milliseconds,
 			read.IdentType,
 			read.Type,
+			read.Antenna,
+			read.Reader,
+			read.RSSI,
 		)
 		if err != nil {
 			return nil, err
@@ -98,7 +120,9 @@ func (p *Postgres) DeleteReads(account int64, reader_name string, from, to int64
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"DELETE FROM read r WHERE seconds>=$1 AND seconds<=$2 AND EXISTS (SELECT * FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$3 AND a.reader_name=$4);",
+		"DELETE FROM read r WHERE seconds>=$1 AND seconds<=$2 AND EXISTS (SELECT * "+
+			"FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$3 AND "+
+			"a.reader_name=$4);",
 		from,
 		to,
 		account,
@@ -137,7 +161,8 @@ func (p *Postgres) DeleteReaderReads(account int64, reader_name string) (int64, 
 	defer cancelfunc()
 	res, err := db.Exec(
 		ctx,
-		"DELETE FROM read r WHERE EXISTS (SELECT * FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$1 AND a.reader_name=$2);",
+		"DELETE FROM read r WHERE EXISTS (SELECT * FROM api_key a WHERE "+
+			"a.key_value=r.key_value AND a.account_id=$1 AND a.reader_name=$2);",
 		account,
 		reader_name,
 	)

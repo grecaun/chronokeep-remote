@@ -88,6 +88,9 @@ func setupReadsTests() {
 				Milliseconds: 600,
 				IdentType:    "chip",
 				Type:         "reader",
+				Antenna:      2,
+				Reader:       "test",
+				RSSI:         "-50",
 			},
 			{
 				Identifier:   "1",
@@ -95,6 +98,9 @@ func setupReadsTests() {
 				Milliseconds: 20,
 				IdentType:    "chip",
 				Type:         "reader",
+				Antenna:      2,
+				Reader:       "test",
+				RSSI:         "-50",
 			},
 			{
 				Identifier:   "15",
@@ -165,6 +171,17 @@ func TestAddReads(t *testing.T) {
 	}
 	if len(res) != len(reads) {
 		t.Errorf("Expected %v reads to be returned, %v returned.", len(reads), len(res))
+	}
+	for _, outer := range reads {
+		found := false
+		for _, inner := range res {
+			if outer.Equals(&inner) {
+				found = true
+			}
+		}
+		if found == false {
+			t.Fatalf("Expected to find a read added.")
+		}
 	}
 	res, err = db.AddReads(keys[1].Value, reads[0:2])
 	if err != nil {

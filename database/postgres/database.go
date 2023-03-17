@@ -223,6 +223,9 @@ func (p *Postgres) createTables() error {
 				"milliseconds INT NOT NULL DEFAULT 0, " +
 				"ident_type VARCHAR(25) NOT NULL DEFAULT 'chip', " +
 				"type VARCHAR(25) NOT NULL DEFAULT '', " +
+				"antenna INT NOT NULL DEFAULT 0, " +
+				"reader VARCHAR(50) NOT NULL DEFAULT '', " +
+				"rssi VARCHAR(10) NOT NULL DEFAULT '', " +
 				"read_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"UNIQUE(key_value, identifier, seconds, milliseconds, ident_type), " +
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +

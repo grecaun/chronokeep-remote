@@ -100,7 +100,7 @@ func TestGetReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 			assert.Equal(t, 0, len(resp.Reads))
 		}
 	}
@@ -121,7 +121,7 @@ func TestGetReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 			assert.Equal(t, 0, len(resp.Reads))
 		}
 	}
@@ -145,7 +145,7 @@ func TestGetReads(t *testing.T) {
 		var resp types.GetReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, 300, len(resp.Reads))
-			assert.Equal(t, 300, resp.Count)
+			assert.Equal(t, int64(300), resp.Count)
 			assert.Equal(t, "chip", resp.Reads[0].IdentType)
 			assert.Equal(t, "reader", resp.Reads[0].Type)
 		}
@@ -169,7 +169,7 @@ func TestGetReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, resp.Count, len(resp.Reads))
+			assert.Equal(t, resp.Count, int64(len(resp.Reads)))
 			for _, read := range resp.Reads {
 				assert.True(t, read.Seconds <= 35+360 && read.Seconds >= 35)
 				assert.Equal(t, "chip", read.IdentType)
@@ -194,7 +194,7 @@ func TestGetReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, resp.Count, len(resp.Reads))
+			assert.Equal(t, resp.Count, int64(len(resp.Reads)))
 			for _, read := range resp.Reads {
 				assert.True(t, read.Seconds <= 550 && read.Seconds >= 135)
 				assert.Equal(t, "chip", read.IdentType)
@@ -351,7 +351,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 3, resp.Count)
+			assert.Equal(t, int64(3), resp.Count)
 		}
 	}
 	// Test validation -- IdentType
@@ -379,7 +379,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 		}
 	}
 	// Test validation -- Type
@@ -407,7 +407,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 		}
 	}
 	// Test validation -- Seconds
@@ -435,7 +435,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 		}
 	}
 	// Test validation -- Milliseconds
@@ -463,7 +463,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 		}
 	}
 	// Test validation -- Identifier
@@ -491,7 +491,7 @@ func TestAddReads(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.UploadReadsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 0, resp.Count)
+			assert.Equal(t, int64(0), resp.Count)
 		}
 	}
 }

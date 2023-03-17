@@ -17,6 +17,9 @@ type Read struct {
 	Milliseconds int    `json:"milliseconds" validate:"gte=0"`
 	IdentType    string `json:"ident_type"`
 	Type         string `json:"type"`
+	Antenna      int    `json:"antenna"`
+	Reader       string `json:"reader"`
+	RSSI         string `json:"rssi"`
 }
 
 // Validate Ensures valid data in the struct
@@ -30,4 +33,16 @@ func (r *Read) Validate(validate *validator.Validate) error {
 		return errors.New("invalid read type (reader/manual)")
 	}
 	return validate.Struct(r)
+}
+
+// Compare two Reads
+func (r *Read) Equals(other *Read) bool {
+	return r.IdentType == other.IdentType &&
+		r.Identifier == other.Identifier &&
+		r.Seconds == other.Seconds &&
+		r.Milliseconds == other.Milliseconds &&
+		r.Type == other.Type &&
+		r.Antenna == other.Antenna &&
+		r.Reader == other.Reader &&
+		r.RSSI == other.RSSI
 }
