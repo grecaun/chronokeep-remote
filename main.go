@@ -32,6 +32,11 @@ func main() {
 		Format:  "${method} | ${status} | ${uri} -> ${latency_human}\n",
 		Skipper: healthEndpointSkipper,
 	}))
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{
+			"*",
+		},
+	}))
 
 	log.Info("Calling handler setup.")
 	// Handlers has a setup function which sets up the database for use.
