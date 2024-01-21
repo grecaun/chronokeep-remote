@@ -17,6 +17,9 @@ func (h Handler) Bind(group *echo.Group) {
 	group.DELETE("/reads/delete", h.DeleteReads)
 	// Reader handler(s)
 	group.GET("/readers", h.GetReaders)
+	// Account Login
+	group.POST("/account/login", h.Login)
+	group.POST("/account/refresh", h.Refresh)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {
