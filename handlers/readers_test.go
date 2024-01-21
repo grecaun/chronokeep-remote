@@ -87,17 +87,17 @@ func TestGetReaders(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		var resp types.GetReadersResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
-			assert.Equal(t, 4, len(resp.Readers))
+			// There is only 1 api key with the type set to write for this account
+			assert.Equal(t, 1, len(resp.Readers))
 			keys, err := database.GetAccountKeys(variables.accounts[1].Email)
 			if assert.NoError(t, err) {
-				assert.Equal(t, len(keys), len(resp.Readers))
-				for _, k := range keys {
+				// there should always be more keys than readers
+				for _, read := range resp.Readers {
 					found := false
-					for _, read := range resp.Readers {
-						if k.ReaderName == read.Identifier {
+					for _, k := range keys {
+						if k.Name == read.Name {
 							found = true
-							assert.Equal(t, k.ReaderName, read.Identifier)
-							assert.Equal(t, k.Name, read.Name)
+							break
 						}
 					}
 					assert.True(t, found)

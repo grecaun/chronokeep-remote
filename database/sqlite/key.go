@@ -17,7 +17,7 @@ func (s *SQLite) GetAccountKeys(email string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, key_name, key_value, key_type, reader_name, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
+		"SELECT account_id, key_name, key_value, key_type, valid_until FROM api_key NATURAL JOIN account WHERE key_deleted=FALSE AND account_email=?;",
 		email,
 	)
 	if err != nil {
@@ -32,7 +32,6 @@ func (s *SQLite) GetAccountKeys(email string) ([]types.Key, error) {
 			&key.Name,
 			&key.Value,
 			&key.Type,
-			&key.ReaderName,
 			&key.ValidUntil,
 		)
 		if err != nil {
@@ -52,7 +51,7 @@ func (s *SQLite) GetAccountKeysByKey(key string) ([]types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT a.account_id, a.key_name, a.key_value, a.key_type, a.reader_name, a.valid_until FROM api_key a WHERE a.key_deleted=FALSE AND "+
+		"SELECT a.account_id, a.key_name, a.key_value, a.key_type, a.valid_until FROM api_key a WHERE a.key_deleted=FALSE AND "+
 			"EXISTS (SELECT * FROM api_key b WHERE a.account_id=b.account_id AND b.key_value=?);",
 		key,
 	)
@@ -68,7 +67,6 @@ func (s *SQLite) GetAccountKeysByKey(key string) ([]types.Key, error) {
 			&key.Name,
 			&key.Value,
 			&key.Type,
-			&key.ReaderName,
 			&key.ValidUntil,
 		)
 		if err != nil {
@@ -88,7 +86,7 @@ func (s *SQLite) GetKey(key string) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.QueryContext(
 		ctx,
-		"SELECT account_id, key_name, key_value, key_type, reader_name, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=?;",
+		"SELECT account_id, key_name, key_value, key_type, valid_until FROM api_key WHERE key_deleted=FALSE AND key_value=?;",
 		key,
 	)
 	if err != nil {
@@ -102,7 +100,6 @@ func (s *SQLite) GetKey(key string) (*types.Key, error) {
 			&outKey.Name,
 			&outKey.Value,
 			&outKey.Type,
-			&outKey.ReaderName,
 			&outKey.ValidUntil,
 		)
 		if err != nil {
@@ -123,12 +120,11 @@ func (s *SQLite) AddKey(key types.Key) (*types.Key, error) {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"INSERT INTO api_key(account_id, key_name, key_value, key_type, reader_name, valid_until) VALUES (?, ?, ?, ?, ?, ?);",
+		"INSERT INTO api_key(account_id, key_name, key_value, key_type, valid_until) VALUES (?, ?, ?, ?, ?);",
 		key.AccountIdentifier,
 		key.Name,
 		key.Value,
 		key.Type,
-		key.ReaderName,
 		key.ValidUntil,
 	)
 	if err != nil {
@@ -146,7 +142,6 @@ func (s *SQLite) AddKey(key types.Key) (*types.Key, error) {
 		Name:              key.Name,
 		Value:             key.Value,
 		Type:              key.Type,
-		ReaderName:        key.ReaderName,
 		ValidUntil:        key.ValidUntil,
 	}, nil
 }
@@ -185,10 +180,9 @@ func (s *SQLite) UpdateKey(key types.Key) error {
 	defer cancelfunc()
 	res, err := db.ExecContext(
 		ctx,
-		"UPDATE api_key SET key_name=?, key_type=?, reader_name=?, valid_until=? WHERE key_deleted=FALSE AND key_value=?;",
+		"UPDATE api_key SET key_name=?, key_type=?, valid_until=? WHERE key_deleted=FALSE AND key_value=?;",
 		key.Name,
 		key.Type,
-		key.ReaderName,
 		key.ValidUntil,
 		key.Value,
 	)

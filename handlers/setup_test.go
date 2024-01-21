@@ -88,66 +88,58 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	for _, key := range []types.Key{
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
-			Name:              "expired1",
 			Value:             "030001-1ACSDD-K2389A-00123B",
-			Type:              "read",
-			ReaderName:        "reader1",
+			Type:              "write",
+			Name:              "reader1",
 			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
-			Name:              "write",
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
-			ReaderName:        "reader2",
+			Name:              "reader2",
 			ValidUntil:        &times[1],
 		},
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
 			Value:             "0030001-1ACSCT-K2389A-22023BAA",
-			Name:              "delete3",
 			Type:              "delete",
-			ReaderName:        "reader3",
+			Name:              "reader3",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22023B",
-			Name:              "delete",
 			Type:              "delete",
-			ReaderName:        "reader4",
+			Name:              "reader4",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423B",
-			Name:              "read",
 			Type:              "read",
-			ReaderName:        "reader5",
+			Name:              "user",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22423BAA",
-			Name:              "write2",
 			Type:              "write",
-			ReaderName:        "reader6",
+			Name:              "reader6",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[1].Identifier,
 			Value:             "030001-1ACSCT-K2389A-22023BAA",
-			Name:              "delete2",
 			Type:              "delete",
-			ReaderName:        "reader7",
+			Name:              "reader7",
 			ValidUntil:        nil,
 		},
 		{
 			AccountIdentifier: output.accounts[0].Identifier,
-			Name:              "expired2",
 			Value:             "030001-1ACSDD-K2389A-001230B",
 			Type:              "delete",
-			ReaderName:        "reader8",
+			Name:              "reader8",
 			ValidUntil:        &times[0],
 		},
 	} {
@@ -156,7 +148,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			t.Errorf("Error adding key: %v", err)
 		}
 		if k == nil {
-			t.Errorf("Error adding key: %v -- %v : %v", key, key.AccountIdentifier, key.ReaderName)
+			t.Errorf("Error adding key: %v -- %v : %v", key, key.AccountIdentifier, key.Name)
 		} else {
 			t.Logf("Adding reads for key: %v", k.Value)
 			r, err := database.AddReads(k.Value, reads)

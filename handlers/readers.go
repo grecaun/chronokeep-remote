@@ -34,10 +34,11 @@ func (h Handler) GetReaders(c echo.Context) error {
 	}
 	readers := make([]types.Reader, 0)
 	for _, k := range keys {
-		readers = append(readers, types.Reader{
-			Name:       k.Name,
-			Identifier: k.ReaderName,
-		})
+		if k.Type == "write" {
+			readers = append(readers, types.Reader{
+				Name: k.Name,
+			})
+		}
 	}
 	return c.JSON(http.StatusOK, types.GetReadersResponse{
 		Readers: readers,

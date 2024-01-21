@@ -14,18 +14,16 @@ import (
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
 	AccountIdentifier int64      `json:"account_id"`
-	Name              string     `json:"name"`
+	Name              string     `json:"name" validate:"required"`
 	Value             string     `json:"value"`
 	Type              string     `json:"type" validate:"required"`
-	ReaderName        string     `json:"reader" validate:"required"`
 	ValidUntil        *time.Time `json:"valid_until"`
 }
 
 type RequestKey struct {
-	Name       string `json:"name"`
+	Name       string `json:"name" validate:"required"`
 	Value      string `json:"value"`
 	Type       string `json:"type" validate:"required"`
-	ReaderName string `json:"reader" validate:"required"`
 	ValidUntil string `json:"valid_until"`
 }
 
@@ -34,7 +32,6 @@ func (k *Key) Equal(other *Key) bool {
 		k.Name == other.Name &&
 		k.Value == other.Value &&
 		k.Type == other.Type &&
-		k.ReaderName == other.ReaderName &&
 		// This next expression is TRUE if both are nil or both are not nil and they are equal.
 		((k.ValidUntil != nil && other.ValidUntil != nil && k.ValidUntil.Equal(*other.ValidUntil)) || (k.ValidUntil == nil && other.ValidUntil == nil))
 }
@@ -44,7 +41,7 @@ func (k *Key) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
 	case "default":
-		k.Type = "read"
+		k.Type = "write"
 		valid = true
 	case "read":
 		valid = true
@@ -92,10 +89,9 @@ func (k Key) Expired() bool {
 // ToKey Returns a Key struct with proper information.
 func (k RequestKey) ToKey() Key {
 	out := Key{
-		Name:       k.Name,
-		Value:      k.Value,
-		Type:       k.Type,
-		ReaderName: strings.TrimSpace(k.ReaderName),
+		Name:  strings.TrimSpace(k.Name),
+		Value: k.Value,
+		Type:  k.Type,
 	}
 	valid, err := time.Parse(time.RFC3339, k.ValidUntil)
 	if err == nil {

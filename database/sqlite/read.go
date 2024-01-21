@@ -23,7 +23,7 @@ func (s *SQLite) GetReads(account int64, reader_name string, from, to int64) ([]
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna,"+
 			" reader, rssi FROM a_read NATURAL JOIN api_key WHERE account_id=? AND "+
-			"reader_name=? AND seconds>=? AND seconds<=?;",
+			"key_name=? AND seconds>=? AND seconds<=?;",
 		account,
 		reader_name,
 		from,
@@ -136,7 +136,7 @@ func (s *SQLite) DeleteReads(account int64, reader_name string, from, to int64) 
 		ctx,
 		"DELETE FROM a_read AS r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS "+
 			"(SELECT * FROM api_key AS a WHERE r.key_value=a.key_value AND "+
-			"a.account_id=? AND a.reader_name=?);",
+			"a.account_id=? AND a.key_name=?);",
 		from,
 		to,
 		account,
@@ -184,7 +184,7 @@ func (s *SQLite) DeleteReaderReads(account int64, reader_name string) (int64, er
 	res, err := db.ExecContext(
 		ctx,
 		"DELETE FROM a_read AS r WHERE EXISTS (SELECT * FROM api_key AS a WHERE "+
-			"r.key_value=a.key_value AND a.account_id=? AND a.reader_name=?);",
+			"r.key_value=a.key_value AND a.account_id=? AND a.key_name=?);",
 		account,
 		reader_name,
 	)

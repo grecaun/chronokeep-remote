@@ -120,16 +120,15 @@ func setupOld() (*Postgres, error) {
 			name: "KeyTable",
 			query: "CREATE TABLE IF NOT EXISTS api_key(" +
 				"account_id BIGINT NOT NULL, " +
-				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
+				"key_name VARCHAR(100) NOT NULL," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
-				"reader_name VARCHAR(100) NOT NULL, " +
 				"valid_until TIMESTAMPTZ DEFAULT NULL, " +
 				"key_deleted BOOL DEFAULT FALSE, " +
 				"key_created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"key_updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP, " +
 				"UNIQUE(key_value), " +
-				"UNIQUE(account_id, reader_name)," +
+				"UNIQUE(account_id, key_name)," +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");",
 		},

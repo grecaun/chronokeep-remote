@@ -89,10 +89,9 @@ func (h Handler) AddKey(c echo.Context) error {
 	}
 	key, err := database.AddKey(types.Key{
 		AccountIdentifier: accountid,
-		Name:              request.Key.Name,
+		Name:              strings.TrimSpace(request.Key.Name),
 		Value:             newKey.String(),
 		Type:              request.Key.Type,
-		ReaderName:        strings.TrimSpace(request.Key.ReaderName),
 		ValidUntil:        request.Key.GetValidUntil(),
 	})
 	if err != nil || key == nil {

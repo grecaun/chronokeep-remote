@@ -329,14 +329,14 @@ func TestDeleteAccount(t *testing.T) {
 			AccountIdentifier: nAccount.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
-			ReaderName:        "reader1",
+			Name:              "reader1",
 			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: nAccount.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
-			ReaderName:        "reader2",
+			Name:              "reader2",
 			ValidUntil:        &times[1],
 		},
 	}
@@ -605,14 +605,14 @@ func TestGetAccountByKey(t *testing.T) {
 			AccountIdentifier: nAccount1.Identifier,
 			Value:             "030001-1ACSDD-K2389A-00123B",
 			Type:              "default",
-			ReaderName:        "reader1",
+			Name:              "reader1",
 			ValidUntil:        &times[0],
 		},
 		{
 			AccountIdentifier: nAccount2.Identifier,
 			Value:             "030001-1ACSDD-K2389A-22123B",
 			Type:              "write",
-			ReaderName:        "reader2",
+			Name:              "reader2",
 			ValidUntil:        &times[1],
 		},
 	}

@@ -23,7 +23,7 @@ func (p *Postgres) GetReads(account int64, reader_name string, from, to int64) (
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna,"+
 			" reader, rssi FROM read NATURAL JOIN api_key WHERE account_id=$1 AND "+
-			"reader_name=$2 AND seconds>=$3 AND seconds<=$4;",
+			"key_name=$2 AND seconds>=$3 AND seconds<=$4;",
 		account,
 		reader_name,
 		from,
@@ -122,7 +122,7 @@ func (p *Postgres) DeleteReads(account int64, reader_name string, from, to int64
 		ctx,
 		"DELETE FROM read r WHERE seconds>=$1 AND seconds<=$2 AND EXISTS (SELECT * "+
 			"FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$3 AND "+
-			"a.reader_name=$4);",
+			"a.key_name=$4);",
 		from,
 		to,
 		account,
@@ -162,7 +162,7 @@ func (p *Postgres) DeleteReaderReads(account int64, reader_name string) (int64, 
 	res, err := db.Exec(
 		ctx,
 		"DELETE FROM read r WHERE EXISTS (SELECT * FROM api_key a WHERE "+
-			"a.key_value=r.key_value AND a.account_id=$1 AND a.reader_name=$2);",
+			"a.key_value=r.key_value AND a.account_id=$1 AND a.key_name=$2);",
 		account,
 		reader_name,
 	)

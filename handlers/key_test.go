@@ -181,7 +181,6 @@ func TestGetKeys(t *testing.T) {
 						if key.Value == inner.Value {
 							found = true
 							assert.Equal(t, key.Name, inner.Name)
-							assert.Equal(t, key.ReaderName, inner.ReaderName)
 							assert.Equal(t, key.Type, inner.Type)
 							if key.ValidUntil != nil {
 								assert.Equal(t, key.ValidUntil.Local(), inner.ValidUntil.Local())
@@ -221,7 +220,6 @@ func TestGetKeys(t *testing.T) {
 						if key.Value == inner.Value {
 							found = true
 							assert.Equal(t, key.Name, inner.Name)
-							assert.Equal(t, key.ReaderName, inner.ReaderName)
 							assert.Equal(t, key.Type, inner.Type)
 							if key.ValidUntil != nil {
 								assert.Equal(t, key.ValidUntil.Local(), inner.ValidUntil.Local())
@@ -468,8 +466,8 @@ func TestAddKey(t *testing.T) {
 	body, err := json.Marshal(types.AddKeyRequest{
 		Email: &variables.accounts[0].Email,
 		Key: types.RequestKey{
-			Type:       "read",
-			ReaderName: "reader12",
+			Type: "read",
+			Name: "reader12",
 		},
 	})
 	if err != nil {
@@ -498,8 +496,8 @@ func TestAddKey(t *testing.T) {
 	}
 	body, err = json.Marshal(types.AddKeyRequest{
 		Key: types.RequestKey{
-			Type:       "read",
-			ReaderName: "reader13",
+			Type: "read",
+			Name: "reader13",
 		},
 	})
 	if err != nil {
@@ -518,7 +516,6 @@ func TestAddKey(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, keys.Value, resp.Key.Value)
 				assert.Equal(t, keys.Name, resp.Key.Name)
-				assert.Equal(t, keys.ReaderName, resp.Key.ReaderName)
 				assert.Equal(t, keys.Type, resp.Key.Type)
 				if keys.ValidUntil != nil {
 					assert.Equal(t, keys.ValidUntil.Local(), resp.Key.ValidUntil.Local())
@@ -544,8 +541,8 @@ func TestAddKey(t *testing.T) {
 	body, err = json.Marshal(types.AddKeyRequest{
 		Email: &variables.accounts[2].Email,
 		Key: types.RequestKey{
-			Type:       "read",
-			ReaderName: "reader14",
+			Type: "read",
+			Name: "reader14",
 		},
 	})
 	if err != nil {
@@ -564,7 +561,6 @@ func TestAddKey(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, keys.Value, resp.Key.Value)
 				assert.Equal(t, keys.Name, resp.Key.Name)
-				assert.Equal(t, keys.ReaderName, resp.Key.ReaderName)
 				assert.Equal(t, keys.Type, resp.Key.Type)
 				if keys.ValidUntil != nil {
 					assert.Equal(t, keys.ValidUntil.Local(), resp.Key.ValidUntil.Local())
@@ -590,8 +586,8 @@ func TestAddKey(t *testing.T) {
 	body, err = json.Marshal(types.AddKeyRequest{
 		Email: &variables.accounts[2].Email,
 		Key: types.RequestKey{
-			Type:       "read",
-			ReaderName: "reader15",
+			Type: "read",
+			Name: "reader15",
 		},
 	})
 	if err != nil {
@@ -622,8 +618,8 @@ func TestAddKey(t *testing.T) {
 	body, err = json.Marshal(types.AddKeyRequest{
 		Email: &email,
 		Key: types.RequestKey{
-			Type:       "read",
-			ReaderName: "reader16",
+			Type: "read",
+			Name: "reader16",
 		},
 	})
 	if err != nil {
@@ -680,8 +676,8 @@ func TestAddKey(t *testing.T) {
 	}
 	body, err = json.Marshal(types.AddKeyRequest{
 		Key: types.RequestKey{
-			Type:       "",
-			ReaderName: "reader17",
+			Type: "",
+			Name: "reader17",
 		},
 	})
 	if err != nil {
@@ -697,8 +693,8 @@ func TestAddKey(t *testing.T) {
 	}
 	body, err = json.Marshal(types.AddKeyRequest{
 		Key: types.RequestKey{
-			Type:       "unknown",
-			ReaderName: "reader18",
+			Type: "unknown",
+			Name: "reader18",
 		},
 	})
 	if err != nil {
@@ -861,10 +857,9 @@ func TestUpdateKey(t *testing.T) {
 	t.Log("Testing invalid content type.")
 	body, err := json.Marshal(types.UpdateKeyRequest{
 		Key: types.RequestKey{
-			Value:      variables.keys[variables.accounts[0].Email][0].Value,
-			Name:       "updated-name",
-			Type:       "read",
-			ReaderName: "reader11",
+			Value: variables.keys[variables.accounts[0].Email][0].Value,
+			Name:  "updated-name",
+			Type:  "read",
 		},
 	})
 	if err != nil {
@@ -896,7 +891,6 @@ func TestUpdateKey(t *testing.T) {
 		Value:      variables.keys[variables.accounts[1].Email][0].Value,
 		Name:       "updated-name",
 		Type:       "read",
-		ReaderName: "reader12",
 		ValidUntil: validUntil,
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
@@ -918,7 +912,6 @@ func TestUpdateKey(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, keys.Value, resp.Key.Value)
 				assert.Equal(t, keys.Name, resp.Key.Name)
-				assert.Equal(t, keys.ReaderName, resp.Key.ReaderName)
 				assert.Equal(t, keys.Type, resp.Key.Type)
 				if keys.ValidUntil != nil {
 					assert.Equal(t, keys.ValidUntil.Local(), resp.Key.ValidUntil.Local())
@@ -927,7 +920,6 @@ func TestUpdateKey(t *testing.T) {
 				}
 				assert.Equal(t, key.Name, keys.Name)
 				assert.Equal(t, key.Value, keys.Value)
-				assert.Equal(t, key.ReaderName, keys.ReaderName)
 				assert.Equal(t, key.Type, keys.Type)
 			}
 		}
@@ -950,7 +942,6 @@ func TestUpdateKey(t *testing.T) {
 		Value:      variables.keys[variables.accounts[1].Email][2].Value,
 		Name:       "updated-name-2",
 		Type:       "write",
-		ReaderName: "new-read26.com",
 		ValidUntil: validUntil,
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
@@ -972,7 +963,6 @@ func TestUpdateKey(t *testing.T) {
 			if assert.NoError(t, err) {
 				assert.Equal(t, keys.Value, resp.Key.Value)
 				assert.Equal(t, keys.Name, resp.Key.Name)
-				assert.Equal(t, keys.ReaderName, resp.Key.ReaderName)
 				assert.Equal(t, keys.Type, resp.Key.Type)
 				if keys.ValidUntil != nil {
 					assert.Equal(t, keys.ValidUntil.Local(), resp.Key.ValidUntil.Local())
@@ -981,7 +971,6 @@ func TestUpdateKey(t *testing.T) {
 				}
 				assert.Equal(t, key.Name, keys.Name)
 				assert.Equal(t, key.Value, keys.Value)
-				assert.Equal(t, key.ReaderName, keys.ReaderName)
 				assert.Equal(t, key.Type, keys.Type)
 			}
 		}
@@ -1004,7 +993,6 @@ func TestUpdateKey(t *testing.T) {
 		Value:      variables.keys[variables.accounts[1].Email][2].Value,
 		Name:       "updated-name-2",
 		Type:       "write",
-		ReaderName: "new-read2.com",
 		ValidUntil: validUntil,
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
@@ -1039,7 +1027,6 @@ func TestUpdateKey(t *testing.T) {
 		Value:      "unknown-key-value",
 		Name:       "updated-name-2",
 		Type:       "write",
-		ReaderName: "new-read21.com",
 		ValidUntil: validUntil,
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
@@ -1099,9 +1086,9 @@ func TestUpdateKey(t *testing.T) {
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
 		Key: types.RequestKey{
-			Value:      variables.keys[variables.accounts[1].Email][2].Value,
-			Type:       "",
-			ReaderName: "reader15",
+			Value: variables.keys[variables.accounts[1].Email][2].Value,
+			Type:  "",
+			Name:  "reader15",
 		},
 	})
 	if err != nil {
@@ -1117,9 +1104,9 @@ func TestUpdateKey(t *testing.T) {
 	}
 	body, err = json.Marshal(types.UpdateKeyRequest{
 		Key: types.RequestKey{
-			Value:      variables.keys[variables.accounts[1].Email][2].Value,
-			Type:       "unknown",
-			ReaderName: "reader16",
+			Value: variables.keys[variables.accounts[1].Email][2].Value,
+			Type:  "unknown",
+			Name:  "reader16",
 		},
 	})
 	if err != nil {

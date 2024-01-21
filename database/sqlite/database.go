@@ -195,16 +195,15 @@ func (s *SQLite) createTables() error {
 			name: "KeyTable",
 			query: "CREATE TABLE IF NOT EXISTS api_key(" +
 				"account_id INTEGER NOT NULL, " +
-				"key_name VARCHAR(100) NOT NULL DEFAULT ''," +
+				"key_name VARCHAR(100) NOT NULL," +
 				"key_value VARCHAR(100) NOT NULL, " +
 				"key_type VARCHAR(20) NOT NULL, " +
-				"reader_name VARCHAR(100) NOT NULL, " +
 				"valid_until DATETIME DEFAULT NULL, " +
 				"key_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"key_updated_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
 				"key_deleted BOOL DEFAULT FALSE, " +
 				"UNIQUE(key_value), " +
-				"UNIQUE(account_id, reader_name), " +
+				"UNIQUE(account_id, key_name), " +
 				"FOREIGN KEY (account_id) REFERENCES account(account_id)" +
 				");",
 		},
@@ -311,10 +310,6 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
 	}
-	// SQLite starts at version 5.  6 will be the first update version.
-	//if oldVersion < 6 && newVersion >= 6 {
-	//     update code for version 6 or greater
-	//}
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=$1 WHERE name='version';",

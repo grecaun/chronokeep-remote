@@ -39,40 +39,37 @@ func setupReadsTests() {
 		keys = []types.Key{
 			{
 				AccountIdentifier: accounts[0].Identifier,
-				Name:              "test1",
 				Value:             "030001-1ACSDD-K2389A-00123B",
 				Type:              "default",
-				ReaderName:        "reader1",
+				Name:              "reader1",
 				ValidUntil:        &times[0],
 			},
 			{
 				AccountIdentifier: accounts[0].Identifier,
 				Value:             "030001-1ACSDD-K2389A-22123B",
 				Type:              "write",
-				ReaderName:        "reader2",
+				Name:              "reader2",
 				ValidUntil:        &times[1],
 			},
 			{
 				AccountIdentifier: accounts[1].Identifier,
-				Name:              "test2",
 				Value:             "030001-1ACSDD-KH789A-00123B",
 				Type:              "delete",
-				ReaderName:        "reader3",
+				Name:              "reader3",
 				ValidUntil:        &times[2],
 			},
 			{
 				AccountIdentifier: accounts[1].Identifier,
 				Value:             "030001-1ACSCT-K2389A-22123B",
 				Type:              "write",
-				ReaderName:        "reader4",
+				Name:              "reader4",
 				ValidUntil:        nil,
 			},
 			{
 				AccountIdentifier: accounts[0].Identifier,
-				Name:              "test1",
 				Value:             "030001-1ACSDD-K2389A-00123B-55223A",
 				Type:              "default",
-				ReaderName:        "reader1",
+				Name:              "reader1",
 				ValidUntil:        &times[0],
 			},
 		}
@@ -165,7 +162,7 @@ func TestAddReads(t *testing.T) {
 		t.Errorf("Expected %v reads to be returned, %v returned.", len(reads), len(res))
 	}
 	db.AddReads(keys[0].Value, reads)
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
@@ -197,7 +194,7 @@ func TestAddReads(t *testing.T) {
 	if len(res) != 2 {
 		t.Errorf("Expected %v reads to be added, %v added.", 2, len(res))
 	}
-	res, err = db.GetReads(keys[1].AccountIdentifier, keys[1].ReaderName, now, now+1000)
+	res, err = db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("Erorr getting reads: %v", err)
 	}
@@ -222,7 +219,7 @@ func TestGetReads(t *testing.T) {
 	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
-	res, err := db.GetReads(keys[1].AccountIdentifier, keys[1].ReaderName, now, now+1000)
+	res, err := db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
@@ -230,35 +227,35 @@ func TestGetReads(t *testing.T) {
 		t.Fatalf("Found results when none should exist: %v", len(res))
 	}
 	db.AddReads(keys[0].Value, reads)
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
 	if len(res) != len(reads) {
 		t.Errorf("Expected %v reads to be returned, %v returned.", len(reads), len(res))
 	}
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+55)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+55)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
 	if len(res) != 4 {
 		t.Errorf("Expected %v reads to be returned, %v returned.", 4, len(res))
 	}
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
 	if len(res) != 1 {
 		t.Errorf("Expected %v reads to be returned, %v returned.", 1, len(res))
 	}
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now+35, now+400)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now+35, now+400)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
 	if len(res) != 4 {
 		t.Errorf("Expected %v reads to be returned, %v returned.", 4, len(res))
 	}
-	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now-400)
+	res, err = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now-400)
 	if err != nil {
 		t.Fatalf("Erorr adding reads: %v", err)
 	}
@@ -283,7 +280,7 @@ func TestDeleteReads(t *testing.T) {
 	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
-	count, err := db.DeleteReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	count, err := db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
@@ -291,26 +288,26 @@ func TestDeleteReads(t *testing.T) {
 		t.Fatalf("count expected to be %v, deleted %v", 0, count)
 	}
 	db.AddReads(keys[0].Value, reads)
-	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
 	if count != int64(len(reads)) {
 		t.Fatalf("count expected to be %v, deleted %v", len(reads), count)
 	}
-	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if len(res) != 0 {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
 	db.AddReads(keys[0].Value, reads)
-	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+35)
+	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+35)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
 	if count != 3 {
 		t.Fatalf("count expected to be %v, deleted %v", 3, count)
 	}
-	res, _ = db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, _ = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if len(res) != 4 {
 		t.Fatalf("epected to find %v reads but found %v", 4, len(res))
 	}
@@ -348,11 +345,11 @@ func TestDeleteKeyReads(t *testing.T) {
 	if count != int64(len(reads)) {
 		t.Fatalf("count expected to be %v, deleted %v", len(reads), count)
 	}
-	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if len(res) != 0 {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
-	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].ReaderName, now, now+1000)
+	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
 	if len(res) != len(reads) {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
@@ -374,7 +371,7 @@ func TestDeleteReaderReads(t *testing.T) {
 	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
-	count, err := db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].ReaderName)
+	count, err := db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
@@ -383,18 +380,18 @@ func TestDeleteReaderReads(t *testing.T) {
 	}
 	db.AddReads(keys[0].Value, reads)
 	db.AddReads(keys[1].Value, reads)
-	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].ReaderName)
+	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
 	if count != int64(len(reads)) {
 		t.Fatalf("count expected to be %v, deleted %v", 0, count)
 	}
-	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].ReaderName, now, now+1000)
+	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
 	if len(res) != 0 {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
-	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].ReaderName, now, now+1000)
+	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
 	if len(res) != len(reads) {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
