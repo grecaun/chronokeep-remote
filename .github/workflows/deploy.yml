@@ -42,12 +42,13 @@ jobs:
         uses: thedoctor0/zip-release@0.7.5
         with:
           type: 'tar'
-          filename: ${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
-          exclusions: '*.git* ./*.go *.md *.mod *.sum LICENSE auth/* database/* handlers/* types/* util/* vendor/*'
+          filename: release/${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
+          exclusions: '*.git* ./*.go *.md *.mod *.sum LICENSE /*auth/* /*database/* /*handlers/* /*types/* /*util/* /*vendor/* *.tar.gz /*release/*'
+          command: "mkdir -p release"
 
       - name: Update release asset
         id: upload-release-asset
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
+          file: release/${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
