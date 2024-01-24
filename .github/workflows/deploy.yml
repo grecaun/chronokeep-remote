@@ -35,7 +35,7 @@ jobs:
         with:
           type: 'tar'
           filename: release/${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
-          exclusions: '*.git* ./*.go *.md *.mod *.sum LICENSE auth/* database/* handlers/* types/* util/* vendor/* *.tar.gz release/*'
+          exclusions: '*.git* *.go *.md *.mod *.sum LICENSE auth/ database/ handlers/ types/ util/ vendor/ *.tar.gz release/'
           command: "mkdir -p release"
 
       - name: Create release
