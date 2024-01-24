@@ -28,14 +28,6 @@ jobs:
 
       - name: Build
         run: go build .
-
-      - name: Create release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: ${{ steps.release-version.outputs.RELEASE_VERSION }}
       
       - name: Tar and Zip the version and executable files
         id: create_archive
@@ -45,6 +37,14 @@ jobs:
           filename: release/${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
           exclusions: '*.git* ./*.go *.md *.mod *.sum LICENSE /*auth/* /*database/* /*handlers/* /*types/* /*util/* /*vendor/* *.tar.gz /*release/*'
           command: "mkdir -p release"
+
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.release-version.outputs.RELEASE_VERSION }}
 
       - name: Update release asset
         id: upload-release-asset
