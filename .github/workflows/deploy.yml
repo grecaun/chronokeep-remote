@@ -1,7 +1,9 @@
+# This is a continuous delivery pipeline for github meant to compile Chronokeep Remote and push it to github releases.
 name: Deploy Remote API
 on:
   push:
-    branches: [deploy]
+    tags:
+      - '*'
   workflow_dispatch:
   
 jobs:
@@ -11,21 +13,41 @@ jobs:
     steps:
       - name: Check out source code
         uses: actions/checkout@v4
-
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '>=1.21.6'
           check-latest: true
+      # Generate version information
+      - name: Generate version text file
+        run: git describe --tag > version.txt
+      # Set an environment variable to the tag we want to use to describe this release.
+      - name: Get tag environment variable.
+        run: echo "RELEASE_VERSION=$(git describe --tag)" >> $GITHUB_OUTPUT
+        id: release-version
+
       - name: Build
         run: go build .
 
-      - name: Copying files to server
-        uses: appleboy/scp-action@master
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "remote"
-          target: "deploy"
+          tag: ${{ steps.release-version.outputs.RELEASE_VERSION }}
+      
+      - name: Tar and Zip the version and executable files
+        id: create_archive
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: 'tar'
+          filename: ${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
+          exclusions: '*.git* ./*.go *.md *.mod *.sum LICENSE auth/* database/* handlers/* types/* util/* vendor/*'
+
+      - name: Update release asset
+        id: upload-release-asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ steps.release-version.outputs.RELEASE_VERSION }}.tar.gz
