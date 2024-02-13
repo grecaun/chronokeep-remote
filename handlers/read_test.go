@@ -128,7 +128,7 @@ func TestGetReads(t *testing.T) {
 	// Test valid
 	t.Log("Testing valid request.")
 	body, err = json.Marshal(types.GetReadsRequest{
-		ReaderName: "reader5",
+		ReaderName: "reader6",
 		Start:      0,
 		End:        10000,
 	})
@@ -153,7 +153,7 @@ func TestGetReads(t *testing.T) {
 	// Test start/end values
 	t.Log("Testing start/end values.")
 	body, err = json.Marshal(types.GetReadsRequest{
-		ReaderName: "reader5",
+		ReaderName: "reader6",
 		Start:      35,
 		End:        0,
 	})
@@ -178,7 +178,7 @@ func TestGetReads(t *testing.T) {
 		}
 	}
 	body, err = json.Marshal(types.GetReadsRequest{
-		ReaderName: "reader5",
+		ReaderName: "reader6",
 		Start:      135,
 		End:        550,
 	})
@@ -203,7 +203,7 @@ func TestGetReads(t *testing.T) {
 		}
 	}
 	body, err = json.Marshal(types.GetReadsRequest{
-		ReaderName: "reader5",
+		ReaderName: "reader6",
 		Start:      10000,
 		End:        10050,
 	})
@@ -596,7 +596,7 @@ func TestDeleteReads(t *testing.T) {
 	start = 0
 	end = 70
 	body, err = json.Marshal(types.DeleteReadsRequest{
-		ReaderName: "reader5",
+		ReaderName: "reader6",
 		Start:      &start,
 		End:        &end,
 	})
@@ -614,7 +614,7 @@ func TestDeleteReads(t *testing.T) {
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, int64(0), resp.Count)
 		}
-		nr, err := database.GetReads(variables.accounts[1].Identifier, "reader5", 0, 10000)
+		nr, err := database.GetReads(variables.accounts[1].Identifier, "reader6", 0, 10000)
 		if assert.NoError(t, err) {
 			assert.Equal(t, 300, len(nr))
 		}
