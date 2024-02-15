@@ -1,6 +1,6 @@
 #! /bin/bash
 
-DEST=/root/chronokeep-remote/
+DEST=/chronokeep/remote/
 SERVICE_NAME=chronokeep-remote
 REPO_URL='https://api.github.com/repos/grecaun/chronokeep-remote/releases/latest'
 UPDATE_SCRIPT_URL='https://raw.githubusercontent.com/grecaun/chronokeep-remote/main/update.sh'
