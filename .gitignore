@@ -13,3 +13,16 @@
 
 # Dependency directories (remove the comment below to include it)
 vendor/
+
+# .env file for storing environment variables locally
+.env
+env-bash.sh
+
+# Compiled files
+remote
+
+*.nginx.conf
+*crontab*
+*.service
+*.sh
+*.sqlite
