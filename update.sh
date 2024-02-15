@@ -52,9 +52,9 @@ echo "---- Checking latest Remote release version ----"
 echo "------------------------------------------------"
 LATEST_VERSION=`curl ${REPO_URL} 2>&1 | grep tag_name | sed -e "s/[\":,]//g" | sed -e "s/tag_name//" | sed -e "s/v//"`
 CURRENT_VERSION=`cat ${DEST}version.txt | sed -e "s/v//"`
-echo Latest portal version is ${LATEST_VERSION}
+echo Latest Remote version is ${LATEST_VERSION}
 echo "------------------------------------------------"
-echo Current portal version is ${CURRENT_VERSION}
+echo Current Remote version is ${CURRENT_VERSION}
 echo "------------------------------------------------"
 echo Latest version is ${LATEST_VERSION} - current version is ${CURRENT_VERSION}.
 LATEST_VERSION_MAJOR=`echo ${LATEST_VERSION} | cut -d '.' -f 1`
