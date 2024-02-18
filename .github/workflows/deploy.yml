@@ -28,15 +28,11 @@ jobs:
 
       - name: Build
         run: go build .
-      
-      - name: Tar and Zip the version and executable files
-        id: create_archive
-        uses: thedoctor0/zip-release@0.7.5
-        with:
-          type: 'tar'
-          filename: release/release.tar.gz
-          exclusions: '*.git* *.go *.md *.mod *.sum LICENSE auth database handlers types util vendor *.tar.gz release'
-          command: "mkdir -p release"
+
+      - name: Tar the version an executable files
+        run: tar -cvf release.tar remote version.txt
+      - name: Zip the tar
+        run: gzip release.tar
 
       - name: Create release
         id: create_release
