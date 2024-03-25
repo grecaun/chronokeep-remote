@@ -128,7 +128,7 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE a_read; DROP TABLE api_key; DROP TABLE account; DROP TABLE settings;",
+		"DROP TABLE notification; DROP TABLE a_read; DROP TABLE api_key; DROP TABLE account; DROP TABLE settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -225,6 +225,19 @@ func (s *SQLite) createTables() error {
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +
 				");",
 		},
+		// NOTIFICATIONS TABLE
+		{
+			name: "NotificationsTable",
+			query: "CREATE TABLE IF NOT EXISTS notification(" +
+				"notification_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+				"key_value VARCHAR(100) NOT NULL, " +
+				"notification_type VARCHAR(100) NOT NULL, " +
+				"notification_when BIGINT NOT NULL, " +
+				"notification_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"UNIQUE(key_value, notification_when) ON CONFLICT IGNORE, " +
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +
+				");",
+		},
 		// UPDATE ACCOUNT FUNC
 		{
 			name: "UpdateAccountFunc",
@@ -305,10 +318,29 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-
 	tx, err := s.db.Begin()
 	if err != nil {
 		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	// Update from version 1 to 2
+	if oldVersion < 2 && newVersion >= 2 {
+		log.Debug("Updating to database version 2.")
+		_, err := tx.ExecContext(
+			ctx,
+			"CREATE TABLE IF NOT EXISTS notification("+
+				"notification_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+				"key_value VARCHAR(100) NOT NULL, "+
+				"notification_type VARCHAR(100) NOT NULL, "+
+				"notification_when BIGINT NOT NULL, "+
+				"notification_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, "+
+				"UNIQUE(key_value, notification_when) ON CONFLICT UPDATE, "+
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)"+
+				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
 	}
 	_, err = tx.ExecContext(
 		ctx,

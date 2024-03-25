@@ -310,9 +310,6 @@ func (p *Postgres) UpdateTokens(account types.Account) error {
 	if err != nil {
 		return fmt.Errorf("error updating tokens: %v", err)
 	}
-	if err != nil {
-		return fmt.Errorf("error checking rows affected on token update: %v", err)
-	}
 	if res.RowsAffected() != 1 {
 		return fmt.Errorf("error updating tokens, rows affected: %v", res.RowsAffected())
 	}

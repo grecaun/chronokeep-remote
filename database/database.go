@@ -11,7 +11,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 1
+	CurrentVersion        = 2
 	MaxLoginAttempts      = 4
 )
 
@@ -50,6 +50,9 @@ type Database interface {
 	UpdateKey(key types.Key) error
 	// Multi-get Functions
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
+	// Notification settings
+	GetNotifications(key string) (*types.Notification, error)
+	SaveNotification(notificaiton *types.RequestNotification, key string) error
 	// Close the database
 	Close()
 }

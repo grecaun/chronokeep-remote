@@ -131,7 +131,7 @@ func (m *MySQL) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE a_read, api_key, settings, account;",
+		"DROP TABLE notification, a_read, api_key, settings, account;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -230,6 +230,20 @@ func (m *MySQL) createTables() error {
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +
 				");",
 		},
+		// NOTIFICATIONS TABLE
+		{
+			name: "NotificationsTable",
+			query: "CREATE TABLE IF NOT EXISTS notification(" +
+				"notification_id BIGINT NOT NULL AUTO_INCREMENT, " +
+				"key_value VARCHAR(100) NOT NULL, " +
+				"notification_type VARCHAR(100) NOT NULL, " +
+				"notification_when BIGINT NOT NULL, " +
+				"notification_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+				"UNIQUE(key_value, notification_when), " +
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), " +
+				"PRIMARY KEY (notification_id)" +
+				");",
+		},
 	}
 
 	if m.db == nil {
@@ -285,6 +299,47 @@ func (m *MySQL) checkVersion() int {
 func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 	if m.db == nil {
 		return fmt.Errorf("database not set up")
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	tx, err := m.db.Begin()
+	if err != nil {
+		return fmt.Errorf("unable to start transaction: %v", err)
+	}
+	// Update from version 1 to 2
+	if oldVersion < 2 && newVersion >= 2 {
+		log.Debug("Updating to database version 2.")
+		_, err := tx.ExecContext(
+			ctx,
+			"CREATE TABLE IF NOT EXISTS notification("+
+				"notification_id BIGINT NOT NULL AUTO_INCREMENT, "+
+				"key_value VARCHAR(100) NOT NULL, "+
+				"notification_type VARCHAR(100) NOT NULL, "+
+				"notification_when BIGINT NOT NULL, "+
+				"notification_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, "+
+				"UNIQUE(key_value, notification_when), "+
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), "+
+				"PRIMARY KEY (notification_id)"+
+				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	_, err = tx.ExecContext(
+		ctx,
+		"UPDATE settings SET value=$1 WHERE name='version';",
+		strconv.Itoa(newVersion),
+	)
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		return fmt.Errorf("error committing transaction: %v", err)
 	}
 	return nil
 }
