@@ -329,7 +329,7 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 	}
 	_, err = tx.ExecContext(
 		ctx,
-		"UPDATE settings SET value=$1 WHERE name='version';",
+		"UPDATE settings SET value=? WHERE name='version';",
 		strconv.Itoa(newVersion),
 	)
 	if err != nil {

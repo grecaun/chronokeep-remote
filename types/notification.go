@@ -9,7 +9,7 @@ import (
 )
 
 type Notification struct {
-	Identifier int64     `json:"-"`
+	Identifier int64     `json:"id"`
 	Type       string    `json:"type"`
 	When       time.Time `json:"when"`
 }

@@ -333,7 +333,7 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 				"notification_type VARCHAR(100) NOT NULL, "+
 				"notification_when BIGINT NOT NULL, "+
 				"notification_created_at DATETIME DEFAULT CURRENT_TIMESTAMP, "+
-				"UNIQUE(key_value, notification_when) ON CONFLICT UPDATE, "+
+				"UNIQUE(key_value, notification_when) ON CONFLICT IGNORE, "+
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)"+
 				");",
 		)
