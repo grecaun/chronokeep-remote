@@ -20,6 +20,9 @@ func (h Handler) Bind(group *echo.Group) {
 	// Account Login
 	group.POST("/account/login", h.Login)
 	group.POST("/account/refresh", h.Refresh)
+	// Notification handlers
+	group.POST("/notifications/save", h.SaveNotification)
+	group.GET("/notifications/get", h.GetNotifications)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {

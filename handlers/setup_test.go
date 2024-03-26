@@ -160,6 +160,25 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 			}
 		}
 	}
+	when := time.Now()
+	notes := []types.RequestNotification{
+		{
+			Type: "UPS_DISCONNECTED",
+			When: when.UTC().Format(time.RFC3339),
+		},
+		{
+			Type: "UPS_LOW_BATTERY",
+			When: when.Add(time.Minute * -10).UTC().Format(time.RFC3339),
+		},
+	}
+	err = database.SaveNotification(&notes[0], "030001-1ACSCT-K2389A-22423BAA")
+	if err != nil {
+		t.Fatalf("Unexpected error saving notification: %v", err)
+	}
+	err = database.SaveNotification(&notes[1], "030001-1ACSCT-K2389A-22023BAA")
+	if err != nil {
+		t.Fatalf("Unexpected error saving notification: %v", err)
+	}
 	output.keys[output.accounts[0].Email], err = database.GetAccountKeys(output.accounts[0].Email)
 	if err != nil {
 		t.Fatalf("Unexptected error getting keys: %v", err)

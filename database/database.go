@@ -51,7 +51,7 @@ type Database interface {
 	// Multi-get Functions
 	GetKeyAndAccount(key string) (*types.MultiKey, error)
 	// Notification settings
-	GetNotifications(key string) (*types.Notification, error)
+	GetNotification(account int64, reader_name string) (*types.Notification, error)
 	SaveNotification(notificaiton *types.RequestNotification, key string) error
 	// Close the database
 	Close()

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (p *Postgres) GetNotifications(key string) (*types.Notification, error) {
+func (p *Postgres) GetNotification(account int64, reader_name string) (*types.Notification, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return nil, err
@@ -18,9 +18,11 @@ func (p *Postgres) GetNotifications(key string) (*types.Notification, error) {
 	res, err := db.Query(
 		ctx,
 		"SELECT notification_id, notification_type, notification_when "+
-			"FROM (SELECT key_value, MAX(notification_when) AS max_when FROM notification GROUP BY key_value) AS b INNER JOIN notification AS n ON b.max_when=n.notification_when AND b.key_value=n.key_value "+
-			"WHERE n.key_value=$1 AND n.notification_when>$2;",
-		key,
+			"FROM (SELECT key_value AS kv, MAX(notification_when) AS max_when FROM notification GROUP BY key_value) AS b INNER JOIN notification AS n ON b.max_when=n.notification_when AND b.kv=n.key_value "+
+			"NATURAL JOIN api_key AS a "+
+			"WHERE a.account_id=$1 AND a.key_name=$2 AND n.notification_when>$3;",
+		account,
+		reader_name,
 		time.Now().Add(time.Minute*-5).Unix(),
 	)
 	if err != nil {

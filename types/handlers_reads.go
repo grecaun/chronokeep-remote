@@ -11,8 +11,9 @@ type UploadReadsResponse struct {
 
 // GetReadsResponse Response structure for a read request.
 type GetReadsResponse struct {
-	Count int64  `json:"count"`
-	Reads []Read `json:"reads"`
+	Count int64        `json:"count"`
+	Reads []Read       `json:"reads"`
+	Note  Notification `json:"notification"`
 }
 
 /*

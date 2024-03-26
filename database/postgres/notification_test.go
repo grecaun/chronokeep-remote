@@ -216,7 +216,7 @@ func TestGetNotification(t *testing.T) {
 	_ = db.SaveNotification(&notifications[0], keys[0].Value)
 	_ = db.SaveNotification(&notifications[1], keys[1].Value)
 	_ = db.SaveNotification(&notifications[2], keys[0].Value)
-	note, err := db.GetNotifications(keys[0].Value)
+	note, err := db.GetNotification(account1.Identifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)
 	}
@@ -226,14 +226,14 @@ func TestGetNotification(t *testing.T) {
 	if note.Type != notifications[0].Type {
 		t.Fatalf("expected to find %v for the notification type, found %v", notifications[0].Type, note.Type)
 	}
-	note, err = db.GetNotifications(keys[1].Value)
+	note, err = db.GetNotification(account2.Identifier, keys[1].Name)
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)
 	}
 	if note != nil {
 		t.Fatalf("found notification when none was expected: %v", note)
 	}
-	note, err = db.GetNotifications("invalid key")
+	note, err = db.GetNotification(account1.Identifier, "invalid key")
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)
 	}
