@@ -148,6 +148,7 @@ func TestGetReads(t *testing.T) {
 			assert.Equal(t, int64(300), resp.Count)
 			assert.Equal(t, "chip", resp.Reads[0].IdentType)
 			assert.Equal(t, "reader", resp.Reads[0].Type)
+			assert.Equal(t, "UPS_DISCONNECTED", resp.Note.Type)
 		}
 	}
 	// Test start/end values

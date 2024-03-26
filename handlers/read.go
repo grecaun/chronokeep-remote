@@ -37,9 +37,14 @@ func (h Handler) GetReads(c echo.Context) error {
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Reads", err)
 	}
+	note, err := database.GetNotification(mkey.Account.Identifier, request.ReaderName)
+	if err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Retrieving Notification", err)
+	}
 	return c.JSON(http.StatusOK, types.GetReadsResponse{
 		Count: int64(len(reads)),
 		Reads: reads,
+		Note:  note,
 	})
 }
 

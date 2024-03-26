@@ -28,6 +28,10 @@ func (n *RequestNotification) Validate(validate *validator.Validate) error {
 	if !valid {
 		return fmt.Errorf("%v is not a valid type", n.Type)
 	}
+	_, err := time.Parse(time.RFC3339, n.When)
+	if err != nil {
+		return fmt.Errorf("%v is not a valid date", n.When)
+	}
 	return validate.Struct(n)
 }
 
