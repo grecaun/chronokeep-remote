@@ -62,7 +62,7 @@ func main() {
 			Handler: func(c echo.Context, req []byte, res []byte) {
 				log.Info("Request Log: ", string(req))
 				log.Info("Request Header: ", c.Request().Header)
-				log.Info("Response Log: ", string(res))
+				//log.Info("Response Log: ", string(res))
 			},
 			Skipper: healthEndpointSkipper,
 		}))
