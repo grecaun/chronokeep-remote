@@ -283,6 +283,13 @@ func TestSaveNotification(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		assert.Equal(t, 0, response.Body.Len())
 	}
+	// Verify the notification was saved.
+	note, err := database.GetNotification(variables.accounts[0].Identifier, variables.knownValues["writeName"])
+	if assert.NoError(t, err) {
+		if assert.NotNil(t, note) {
+			assert.Equal(t, "UPS_DISCONNECTED", note.Type)
+		}
+	}
 	// Test validation -- Type
 	t.Log("Testing validation -- Type")
 	body, err = json.Marshal(types.SaveNotificationRequest{

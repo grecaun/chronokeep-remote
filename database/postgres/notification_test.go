@@ -213,10 +213,19 @@ func TestGetNotification(t *testing.T) {
 			When: when.Add(time.Second * -10).UTC().Format(time.RFC3339),
 		},
 	}
+	// No notifications saved.
+	note, err := db.GetNotification(account1.Identifier, keys[0].Name)
+	if err != nil {
+		t.Fatalf("error when trying to get notification: %v", err)
+	}
+	if note != nil {
+		t.Fatalf("found notification when none was expected: %v", note)
+	}
 	_ = db.SaveNotification(&notifications[0], keys[0].Value)
 	_ = db.SaveNotification(&notifications[1], keys[1].Value)
 	_ = db.SaveNotification(&notifications[2], keys[0].Value)
-	note, err := db.GetNotification(account1.Identifier, keys[0].Name)
+	// Saved notification, within time period
+	note, err = db.GetNotification(account1.Identifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)
 	}
@@ -226,6 +235,7 @@ func TestGetNotification(t *testing.T) {
 	if note.Type != notifications[0].Type {
 		t.Fatalf("expected to find %v for the notification type, found %v", notifications[0].Type, note.Type)
 	}
+	// Notification too long ago
 	note, err = db.GetNotification(account2.Identifier, keys[1].Name)
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)
@@ -233,6 +243,7 @@ func TestGetNotification(t *testing.T) {
 	if note != nil {
 		t.Fatalf("found notification when none was expected: %v", note)
 	}
+	// Invalid key
 	note, err = db.GetNotification(account1.Identifier, "invalid key")
 	if err != nil {
 		t.Fatalf("error when trying to get notification: %v", err)

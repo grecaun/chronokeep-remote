@@ -79,5 +79,9 @@ func (h Handler) SaveNotification(c echo.Context) error {
 	if err := request.Note.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Notification", err)
 	}
+	if err := database.SaveNotification(&request.Note, mkey.Key.Value); err != nil {
+		return getAPIError(c, http.StatusInternalServerError, "Error Saving Notification", err)
+	}
+
 	return c.NoContent(http.StatusOK)
 }

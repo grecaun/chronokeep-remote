@@ -84,6 +84,7 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	output.knownValues["delete3"] = "0030001-1ACSCT-K2389A-22023BAA"
 	output.knownValues["read"] = "030001-1ACSCT-K2389A-22423B"
 	output.knownValues["write"] = "030001-1ACSDD-K2389A-22123B"
+	output.knownValues["writeName"] = "reader2"
 	output.knownValues["write2"] = "030001-1ACSCT-K2389A-22423BAA"
 	for _, key := range []types.Key{
 		{
