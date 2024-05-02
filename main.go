@@ -53,7 +53,7 @@ func main() {
 	handler.Bind(e.Group(""))
 	handler.BindRestricted(e.Group(""))
 
-	e.GET("/health", func(c echo.Context) error {
+	e.Any("/health", func(c echo.Context) error {
 		return c.NoContent(http.StatusNoContent)
 	})
 
