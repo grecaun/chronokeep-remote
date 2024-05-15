@@ -191,6 +191,9 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	return output, func(t *testing.T) {
 		t.Log("Deleting old database.")
 		database.Close()
+		// sleep here for a small period of time so the program has time to close the database and we don't default to
+		// an error on the os.Remove call
+		time.Sleep(200 * time.Millisecond)
 		err := os.Remove(config.DBName)
 		if err != nil {
 			t.Fatalf("Error deleting database: %v", err)
