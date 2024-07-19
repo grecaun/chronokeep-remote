@@ -370,7 +370,7 @@ func (s *SQLite) ChangeEmail(oldEmail, newEmail string) error {
 		oldEmail,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating account email: %v", err)
+		return fmt.Errorf("error updating account email: %v", err)
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
@@ -410,7 +410,7 @@ func (s *SQLite) InvalidPassword(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating invalid password information: %v", err)
+		return fmt.Errorf("error updating invalid password information: %v", err)
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
@@ -443,7 +443,7 @@ func (s *SQLite) ValidPassword(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr updating valid password information: %v", err)
+		return fmt.Errorf("error updating valid password information: %v", err)
 	}
 	_, err = res.RowsAffected()
 	if err != nil {
@@ -469,7 +469,7 @@ func (s *SQLite) UnlockAccount(account types.Account) error {
 		account.Email,
 	)
 	if err != nil {
-		return fmt.Errorf("erorr unlocking account: %v", err)
+		return fmt.Errorf("error unlocking account: %v", err)
 	}
 	rows, err := res.RowsAffected()
 	if err != nil {
