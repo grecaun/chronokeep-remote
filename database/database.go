@@ -38,9 +38,10 @@ type Database interface {
 	// Read Functions
 	GetReads(account int64, reader_name string, from, to int64) ([]types.Read, error)
 	AddReads(key string, reads []types.Read) ([]types.Read, error)
-	DeleteReads(account int64, reader_name string, from, to int64) (int64, error)
+	DeleteReaderReads(account int64, reader_name string, from, to int64) (int64, error)
 	DeleteKeyReads(key string) (int64, error)
-	DeleteReaderReads(account int64, reader_name string) (int64, error)
+	DeleteReaderReadsBefore(account int64, reader_name string, to int64) (int64, error)
+	DeleteReaderReadsBetween(account int64, reader_name string) (int64, error)
 	// Key Functions
 	GetAccountKeys(email string) ([]types.Key, error)
 	GetAccountKeysByKey(key string) ([]types.Key, error)

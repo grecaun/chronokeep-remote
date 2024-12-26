@@ -130,9 +130,11 @@ func (h Handler) DeleteReads(c echo.Context) error {
 	// delete reads
 	var count int64
 	if request.Start != nil && request.End != nil {
-		count, err = database.DeleteReads(mkey.Account.Identifier, request.ReaderName, *request.Start, *request.End)
+		count, err = database.DeleteReaderReads(mkey.Account.Identifier, request.ReaderName, *request.Start, *request.End)
+	} else if request.End != nil {
+		count, err = database.DeleteReaderReadsBefore(mkey.Account.Identifier, request.ReaderName, *request.End)
 	} else {
-		count, err = database.DeleteReaderReads(mkey.Account.Identifier, request.ReaderName)
+		count, err = database.DeleteReaderReadsBetween(mkey.Account.Identifier, request.ReaderName)
 	}
 	if err != nil {
 		return getAPIError(c, http.StatusInternalServerError, "Error Deleting Reads", fmt.Errorf("delete returned error: %v", err))

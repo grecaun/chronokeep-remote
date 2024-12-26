@@ -620,8 +620,8 @@ func TestDeleteReads(t *testing.T) {
 			assert.Equal(t, 300, len(nr))
 		}
 	}
-	// Test valid
-	t.Log("Test valid request.")
+	// Test valid -- no specified times
+	t.Log("Test valid request -- no specified times.")
 	body, err = json.Marshal(types.DeleteReadsRequest{
 		ReaderName: "reader1",
 	})
@@ -644,8 +644,54 @@ func TestDeleteReads(t *testing.T) {
 			assert.Equal(t, 0, len(nr))
 		}
 	}
-	// Test start/end values
-	t.Log("Test start/end values.")
+	// Test end value only
+	t.Log("Test end value only.")
+	end = 75
+	body, err = json.Marshal(types.DeleteReadsRequest{
+		ReaderName: "reader2",
+		End:        &end,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodDelete, "/reads/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete3"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteReads(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		nr, err := database.GetReads(variables.accounts[0].Identifier, "reader2", 0, 10000)
+		if assert.NoError(t, err) {
+			for _, r := range nr {
+				assert.True(t, r.Seconds > end)
+			}
+		}
+	}
+	end = 1175
+	body, err = json.Marshal(types.DeleteReadsRequest{
+		ReaderName: "reader2",
+		End:        &end,
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodDelete, "/reads/delete", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete3"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.DeleteReads(c)) {
+		assert.Equal(t, http.StatusOK, response.Code)
+		nr, err := database.GetReads(variables.accounts[0].Identifier, "reader2", 0, 10000)
+		if assert.NoError(t, err) {
+			for _, r := range nr {
+				assert.True(t, r.Seconds > end)
+			}
+		}
+	}
+	// Test start & end values
+	t.Log("Test start & end values.")
 	start = 0
 	end = 75
 	body, err = json.Marshal(types.DeleteReadsRequest{

@@ -108,7 +108,7 @@ func (p *Postgres) AddReads(key string, reads []types.Read) ([]types.Read, error
 	return reads, tx.Commit(ctx)
 }
 
-func (p *Postgres) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
+func (p *Postgres) DeleteReaderReads(account int64, reader_name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}
@@ -152,7 +152,28 @@ func (p *Postgres) DeleteKeyReads(key string) (int64, error) {
 	return res.RowsAffected(), nil
 }
 
-func (p *Postgres) DeleteReaderReads(account int64, reader_name string) (int64, error) {
+func (p *Postgres) DeleteReaderReadsBefore(account int64, reader_name string, to int64) (int64, error) {
+	db, err := p.GetDB()
+	if err != nil {
+		return 0, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.Exec(
+		ctx,
+		"DELETE FROM read r WHERE seconds<=$1 AND EXISTS (SELECT * FROM api_key a WHERE "+
+			"a.key_value=r.key_value AND a.account_id=$2 AND a.key_name=$3);",
+		to,
+		account,
+		reader_name,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("unable to delete reads: %v", err)
+	}
+	return res.RowsAffected(), nil
+}
+
+func (p *Postgres) DeleteReaderReadsBetween(account int64, reader_name string) (int64, error) {
 	db, err := p.GetDB()
 	if err != nil {
 		return 0, err

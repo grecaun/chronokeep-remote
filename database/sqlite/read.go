@@ -122,7 +122,7 @@ func (s *SQLite) AddReads(key string, reads []types.Read) ([]types.Read, error) 
 	return reads, nil
 }
 
-func (s *SQLite) DeleteReads(account int64, reader_name string, from, to int64) (int64, error) {
+func (s *SQLite) DeleteReaderReads(account int64, reader_name string, from, to int64) (int64, error) {
 	if to < from {
 		return 0, errors.New("second input variable must be greater than first")
 	}
@@ -174,7 +174,32 @@ func (s *SQLite) DeleteKeyReads(key string) (int64, error) {
 	return rows, nil
 }
 
-func (s *SQLite) DeleteReaderReads(account int64, reader_name string) (int64, error) {
+func (s *SQLite) DeleteReaderReadsBefore(account int64, reader_name string, to int64) (int64, error) {
+	db, err := s.GetDB()
+	if err != nil {
+		return 0, err
+	}
+	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancelfunc()
+	res, err := db.ExecContext(
+		ctx,
+		"DELETE FROM a_read AS r WHERE r.seconds<=? AND EXISTS (SELECT * FROM api_key AS a WHERE "+
+			"r.key_value=a.key_value AND a.account_id=? AND a.key_name=?);",
+		to,
+		account,
+		reader_name,
+	)
+	if err != nil {
+		return 0, fmt.Errorf("unable to delete reads: %v", err)
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("unable to determine rows affected by delete: %v", err)
+	}
+	return rows, nil
+}
+
+func (s *SQLite) DeleteReaderReadsBetween(account int64, reader_name string) (int64, error) {
 	db, err := s.GetDB()
 	if err != nil {
 		return 0, err

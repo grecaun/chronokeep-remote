@@ -4,6 +4,8 @@ import (
 	"chronokeep/remote/types"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -280,37 +282,34 @@ func TestDeleteReads(t *testing.T) {
 	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
-	count, err := db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
-	if err != nil {
-		t.Fatalf("error deleting non existant reads: %v", err)
-	}
-	if count != 0 {
-		t.Fatalf("count expected to be %v, deleted %v", 0, count)
+	count, err := db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(0), count)
 	}
 	db.AddReads(keys[0].Value, reads)
-	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
-	if err != nil {
-		t.Fatalf("error deleting non existant reads: %v", err)
-	}
-	if count != int64(len(reads)) {
-		t.Fatalf("count expected to be %v, deleted %v", len(reads), count)
-	}
-	res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
-	if len(res) != 0 {
-		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
+	db.AddReads(keys[1].Value, reads)
+	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(len(reads)), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 0, len(res))
 	}
 	db.AddReads(keys[0].Value, reads)
-	count, err = db.DeleteReads(keys[0].AccountIdentifier, keys[0].Name, now, now+35)
-	if err != nil {
-		t.Fatalf("error deleting non existant reads: %v", err)
+	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name, now, now+35)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(3), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 4, len(res))
 	}
-	if count != 3 {
-		t.Fatalf("count expected to be %v, deleted %v", 3, count)
+	db.AddReads(keys[0].Value, reads)
+	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name, now+100, now+500)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(2), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 5, len(res))
 	}
-	res, _ = db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
-	if len(res) != 4 {
-		t.Fatalf("epected to find %v reads but found %v", 4, len(res))
-	}
+	res, _ := db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
+	assert.Equal(t, len(reads), len(res))
 }
 
 func TestDeleteKeyReads(t *testing.T) {
@@ -336,6 +335,7 @@ func TestDeleteKeyReads(t *testing.T) {
 	if count != 0 {
 		t.Fatalf("count expected to be %v, deleted %v", 0, count)
 	}
+	db.AddReads(keys[1].Value, reads)
 	db.AddReads(keys[0].Value, reads)
 	count, err = db.DeleteKeyReads(keys[0].Value)
 	if err != nil {
@@ -348,9 +348,11 @@ func TestDeleteKeyReads(t *testing.T) {
 	if len(res) != 0 {
 		t.Fatalf("epected to find %v reads but found %v", 0, len(res))
 	}
+	res, _ = db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
+	assert.Equal(t, len(reads), len(res))
 }
 
-func TestDeleteReaderReads(t *testing.T) {
+func TestDeleteReaderReadsBefore(t *testing.T) {
 	db, finalize, err := setupTests(t)
 	if err != nil {
 		t.Fatalf("setup error: %v", err)
@@ -366,7 +368,53 @@ func TestDeleteReaderReads(t *testing.T) {
 	keys[4].AccountIdentifier = account1.Identifier
 	db.AddKey(keys[0])
 	db.AddKey(keys[1])
-	count, err := db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name)
+	count, err := db.DeleteReaderReadsBefore(keys[0].AccountIdentifier, keys[0].Name, now+1000)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(0), count)
+	}
+	db.AddReads(keys[1].Value, reads)
+	db.AddReads(keys[0].Value, reads)
+	count, err = db.DeleteReaderReadsBefore(keys[0].AccountIdentifier, keys[0].Name, now+1000)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(len(reads)), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 0, len(res))
+	}
+	db.AddReads(keys[0].Value, reads)
+	count, err = db.DeleteReaderReadsBefore(keys[0].AccountIdentifier, keys[0].Name, now+35)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(3), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 4, len(res))
+	}
+	db.AddReads(keys[0].Value, reads)
+	count, err = db.DeleteReaderReadsBefore(keys[0].AccountIdentifier, keys[0].Name, now+500)
+	if assert.NoError(t, err) {
+		assert.Equal(t, int64(6), count)
+		res, _ := db.GetReads(keys[0].AccountIdentifier, keys[0].Name, now, now+1000)
+		assert.Equal(t, 1, len(res))
+	}
+	res, _ := db.GetReads(keys[1].AccountIdentifier, keys[1].Name, now, now+1000)
+	assert.Equal(t, len(reads), len(res))
+}
+
+func TestDeleteReaderReadsBetween(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("setup error: %v", err)
+	}
+	defer finalize(t)
+	setupReadsTests()
+	account1, _ := db.AddAccount(accounts[0])
+	account2, _ := db.AddAccount(accounts[1])
+	keys[0].AccountIdentifier = account1.Identifier
+	keys[1].AccountIdentifier = account1.Identifier
+	keys[2].AccountIdentifier = account2.Identifier
+	keys[3].AccountIdentifier = account2.Identifier
+	keys[4].AccountIdentifier = account1.Identifier
+	db.AddKey(keys[0])
+	db.AddKey(keys[1])
+	count, err := db.DeleteReaderReadsBetween(keys[0].AccountIdentifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
@@ -375,7 +423,7 @@ func TestDeleteReaderReads(t *testing.T) {
 	}
 	db.AddReads(keys[0].Value, reads)
 	db.AddReads(keys[1].Value, reads)
-	count, err = db.DeleteReaderReads(keys[0].AccountIdentifier, keys[0].Name)
+	count, err = db.DeleteReaderReadsBetween(keys[0].AccountIdentifier, keys[0].Name)
 	if err != nil {
 		t.Fatalf("error deleting non existant reads: %v", err)
 	}
@@ -402,7 +450,7 @@ func TestBadDatabaseRead(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error on add reads.")
 	}
-	_, err = db.DeleteReads(0, "", 0, 0)
+	_, err = db.DeleteReaderReads(0, "", 0, 0)
 	if err == nil {
 		t.Fatal("Expected error on delete reads.")
 	}
@@ -410,7 +458,7 @@ func TestBadDatabaseRead(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error on delete key reads.")
 	}
-	_, err = db.DeleteReaderReads(0, "")
+	_, err = db.DeleteReaderReadsBetween(0, "")
 	if err == nil {
 		t.Fatal("Expected error on delete reader reads.")
 	}
@@ -426,7 +474,7 @@ func TestNoDatabaseRead(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error on add reads.")
 	}
-	_, err = db.DeleteReads(0, "", 0, 0)
+	_, err = db.DeleteReaderReads(0, "", 0, 0)
 	if err == nil {
 		t.Fatal("Expected error on delete reads.")
 	}
@@ -434,7 +482,7 @@ func TestNoDatabaseRead(t *testing.T) {
 	if err == nil {
 		t.Fatal("Expected error on delete key reads.")
 	}
-	_, err = db.DeleteReaderReads(0, "")
+	_, err = db.DeleteReaderReadsBetween(0, "")
 	if err == nil {
 		t.Fatal("Expected error on delete reader reads.")
 	}
