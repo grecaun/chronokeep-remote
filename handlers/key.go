@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetKeys(c echo.Context) error {
+func (h Handler) GetKeys(c *echo.Context) error {
 	var request types.GetKeysRequest
 	err := c.Bind(&request)
 	if err != nil {
@@ -46,7 +46,7 @@ func (h Handler) GetKeys(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddKey(c echo.Context) error {
+func (h Handler) AddKey(c *echo.Context) error {
 	// Adding new Key; Binding request body to key struct.
 	var request types.AddKeyRequest
 	if err := c.Bind(&request); err != nil {
@@ -102,7 +102,7 @@ func (h Handler) AddKey(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteKey(c echo.Context) error {
+func (h Handler) DeleteKey(c *echo.Context) error {
 	var request types.DeleteKeyRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)
@@ -136,7 +136,7 @@ func (h Handler) DeleteKey(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (h Handler) UpdateKey(c echo.Context) error {
+func (h Handler) UpdateKey(c *echo.Context) error {
 	var request types.UpdateKeyRequest
 	if err := c.Bind(&request); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Request Body", err)

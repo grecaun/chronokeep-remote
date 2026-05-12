@@ -4,10 +4,10 @@ import (
 	"chronokeep/remote/types"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetReaders(c echo.Context) error {
+func (h Handler) GetReaders(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
-func (h Handler) GetReads(c echo.Context) error {
+func (h Handler) GetReads(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -48,7 +48,7 @@ func (h Handler) GetReads(c echo.Context) error {
 	})
 }
 
-func (h Handler) AddReads(c echo.Context) error {
+func (h Handler) AddReads(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {
@@ -96,7 +96,7 @@ func (h Handler) AddReads(c echo.Context) error {
 	})
 }
 
-func (h Handler) DeleteReads(c echo.Context) error {
+func (h Handler) DeleteReads(c *echo.Context) error {
 	// Get Key from Authorization Header
 	k, err := retrieveKey(c.Request())
 	if err != nil {

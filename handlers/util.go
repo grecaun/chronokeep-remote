@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ type APIError struct {
 	Message string `json:"message,omitempty"`
 }
 
-func getAPIError(c echo.Context, code int, message string, err error) error {
+func getAPIError(c *echo.Context, code int, message string, err error) error {
 	log.WithFields(log.Fields{
 		"message": message,
 		"error":   err,
