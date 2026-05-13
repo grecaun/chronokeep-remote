@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -47,7 +47,14 @@ func (p *Postgres) GetDatabase(inCfg *util.Config) (*pgxpool.Pool, error) {
 		conString = conString + "?sslmode=require"
 	}
 
-	dbCon, err := pgxpool.Connect(context.Background(), conString)
+	dbCon, err := pgxpool.New(context.Background(), conString)
+	if err != nil {
+		return nil, fmt.Errorf("unable to open database connection: %v", err)
+	}
+
+	// pgxpool.New does not verify the connection
+	// therefor a ping is necessary to ensure validity
+	err = dbCon.Ping(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database connection: %v", err)
 	}
