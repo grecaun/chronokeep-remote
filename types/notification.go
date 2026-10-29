@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+*/
 
 package types
 
@@ -40,7 +40,17 @@ type RequestNotification struct {
 func (n *RequestNotification) Validate(validate *validator.Validate) error {
 	valid := false
 	switch n.Type {
-	case "UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE", "SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP":
+	case "UPS_DISCONNECTED",
+		"UPS_CONNECTED",
+		"UPS_ON_BATTERY",
+		"UPS_LOW_BATTERY",
+		"UPS_ONLINE",
+		"SHUTTING_DOWN",
+		"RESTARTING",
+		"HIGH_TEMP",
+		"MAX_TEMP",
+		"BATTERY_LOW",
+		"BATTERY_CRITICAL":
 		valid = true
 	}
 	if !valid {
@@ -64,4 +74,3 @@ func (n RequestNotification) ToNotification() (*Notification, error) {
 	}
 	return nil, errors.New("invalid time value")
 }
-
