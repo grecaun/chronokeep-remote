@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,8 @@ var (
 
 // Key outline for data stored about an PI key
 // Account should be a unique value for the account that owns the Key.
-// Example types are: read (readonly), delete (read, write, delete), write (read, write)
+// Types are: read (readonly), write (read, write), delete (read, delete; can't write reads).
+// "default" is accepted on input and stored as read.
 // Allowed hosts are the hosts the calls are allowed to come from. Default of empty string is all hosts.
 type Key struct {
 	AccountIdentifier int64      `json:"account_id"`
@@ -72,7 +73,7 @@ func (k *Key) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
 	case "default":
-		k.Type = "write"
+		k.Type = "read"
 		valid = true
 	case "read":
 		valid = true
@@ -88,8 +89,8 @@ func (k *Key) Validate(validate *validator.Validate) error {
 	return validate.Struct(k)
 }
 
-// Validate Ensures valid data in the structure.
-func (k RequestKey) Validate(validate *validator.Validate) error {
+// Validate Ensures valid data in the structure. A "default" type is changed to "read".
+func (k *RequestKey) Validate(validate *validator.Validate) error {
 	valid := false
 	switch k.Type {
 	case "default":
@@ -123,6 +124,9 @@ func (k RequestKey) ToKey() Key {
 		Name:  strings.TrimSpace(k.Name),
 		Value: k.Value,
 		Type:  k.Type,
+	}
+	if out.Type == "default" {
+		out.Type = "read"
 	}
 	valid, err := time.Parse(time.RFC3339, k.ValidUntil)
 	if err == nil {

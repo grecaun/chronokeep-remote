@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -330,6 +330,23 @@ func TestAddReads(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.AddReads(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test delete key
+	t.Log("Testing delete key.")
+	body, err = json.Marshal(types.UploadReadsRequest{
+		Reads: []types.Read{{Identifier: "9999", Seconds: 100, IdentType: "chip", Type: "reader"}},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/reads/add", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete3"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.AddReads(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+		assert.Contains(t, response.Body.String(), "Delete Keys Cannot Write")
 	}
 	// Test valid
 	t.Log("Testing valid request.")

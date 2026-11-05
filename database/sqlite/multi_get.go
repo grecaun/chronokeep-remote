@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,7 @@ func (s *SQLite) GetKeyAndAccount(key string) (*types.MultiKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting account and event from database: %v", err)
 	}
+	defer res.Close()
 	if res.Next() {
 		outVal := types.MultiKey{
 			Key:     &types.Key{},

@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -29,8 +29,11 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 2
+	CurrentVersion        = 4
 	MaxLoginAttempts      = 4
+	// HeartbeatMaxAge is how far back GetHeartbeats looks when listing every reader's latest heartbeat.
+	// It doesn't apply when a single reader is asked for by name.
+	HeartbeatMaxAge = time.Hour * 24
 )
 
 type Database interface {
@@ -72,6 +75,9 @@ type Database interface {
 	// Notification settings
 	GetNotification(account int64, reader_name string) (*types.Notification, error)
 	SaveNotification(notificaiton *types.RequestNotification, key string) error
+	// Heartbeat Functions
+	SaveHeartbeat(key string, heartbeat types.Heartbeat) error
+	GetHeartbeats(account int64, reader_name string) ([]types.ReaderHeartbeat, error)
 	// Close the database
 	Close()
 }

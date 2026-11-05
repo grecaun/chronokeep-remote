@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ func (m *MySQL) GetReads(account int64, reader_name string, from, to int64) ([]t
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna, "+
 			"reader, rssi FROM a_read NATURAL JOIN api_key WHERE account_id=? AND "+
-			"key_name=? AND seconds>=? AND seconds<=?;",
+			"LOWER(key_name)=LOWER(?) AND seconds>=? AND seconds<=?;",
 		account,
 		reader_name,
 		from,
@@ -154,7 +154,7 @@ func (m *MySQL) DeleteReaderReads(account int64, reader_name string, from, to in
 		ctx,
 		"DELETE r FROM a_read r WHERE r.seconds>=? AND r.seconds<=? AND EXISTS "+
 			"(SELECT * FROM api_key a WHERE r.key_value=a.key_value AND "+
-			"a.account_id=? AND a.key_name=?);",
+			"a.account_id=? AND LOWER(a.key_name)=LOWER(?));",
 		from,
 		to,
 		account,
@@ -202,7 +202,7 @@ func (m *MySQL) DeleteReaderReadsBefore(account int64, reader_name string, to in
 	res, err := db.ExecContext(
 		ctx,
 		"DELETE r FROM a_read r WHERE r.seconds<=? AND EXISTS (SELECT * FROM api_key a WHERE "+
-			"r.key_value=a.key_value AND a.account_id=? AND a.key_name=?);",
+			"r.key_value=a.key_value AND a.account_id=? AND LOWER(a.key_name)=LOWER(?));",
 		to,
 		account,
 		reader_name,
@@ -227,7 +227,7 @@ func (m *MySQL) DeleteReaderReadsBetween(account int64, reader_name string) (int
 	res, err := db.ExecContext(
 		ctx,
 		"DELETE r FROM a_read r WHERE EXISTS (SELECT * FROM api_key a WHERE "+
-			"r.key_value=a.key_value AND a.account_id=? AND a.key_name=?);",
+			"r.key_value=a.key_value AND a.account_id=? AND LOWER(a.key_name)=LOWER(?));",
 		account,
 		reader_name,
 	)

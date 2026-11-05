@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -146,7 +146,7 @@ func (s *SQLite) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE notification; DROP TABLE a_read; DROP TABLE api_key; DROP TABLE account; DROP TABLE settings;",
+		"DROP TABLE heartbeat; DROP TABLE notification; DROP TABLE a_read; DROP TABLE api_key; DROP TABLE account; DROP TABLE settings;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -256,6 +256,33 @@ func (s *SQLite) createTables() error {
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)" +
 				");",
 		},
+		// HEARTBEAT TABLE
+		{
+			name: "HeartbeatTable",
+			query: "CREATE TABLE IF NOT EXISTS heartbeat(" +
+				"key_value VARCHAR(100) NOT NULL, " +
+				"heartbeat_device VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_location VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_now BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_uptime BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_battery VARCHAR(50) NOT NULL DEFAULT '', " +
+				"heartbeat_charging BOOL NOT NULL DEFAULT FALSE, " +
+				"heartbeat_hash VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_upload_errors BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_readers_connected INT NOT NULL DEFAULT 0, " +
+				"heartbeat_readers_total INT NOT NULL DEFAULT 0, " +
+				"heartbeat_reading BOOL NOT NULL DEFAULT FALSE, " +
+				"heartbeat_chip_type VARCHAR(20) NOT NULL DEFAULT '', " +
+				"heartbeat_received BIGINT NOT NULL DEFAULT 0, " +
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), " +
+				"PRIMARY KEY (key_value)" +
+				");",
+		},
+		// Reader (key) names are unique per account, ignoring case.
+		{
+			name:  "KeyNameNoCaseIndex",
+			query: "CREATE UNIQUE INDEX IF NOT EXISTS api_key_account_name_nocase ON api_key(account_id, LOWER(key_name));",
+		},
 		// UPDATE ACCOUNT FUNC
 		{
 			name: "UpdateAccountFunc",
@@ -354,6 +381,48 @@ func (s *SQLite) updateTables(oldVersion, newVersion int) error {
 				"UNIQUE(key_value, notification_when) ON CONFLICT IGNORE, "+
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value)"+
 				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	// Update from version 2 to 3
+	if oldVersion < 3 && newVersion >= 3 {
+		log.Debug("Updating to database version 3.")
+		_, err := tx.ExecContext(
+			ctx,
+			"CREATE TABLE IF NOT EXISTS heartbeat("+
+				"key_value VARCHAR(100) NOT NULL, "+
+				"heartbeat_device VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_location VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_now BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_uptime BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_battery VARCHAR(50) NOT NULL DEFAULT '', "+
+				"heartbeat_charging BOOL NOT NULL DEFAULT FALSE, "+
+				"heartbeat_hash VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_upload_errors BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_readers_connected INT NOT NULL DEFAULT 0, "+
+				"heartbeat_readers_total INT NOT NULL DEFAULT 0, "+
+				"heartbeat_reading BOOL NOT NULL DEFAULT FALSE, "+
+				"heartbeat_chip_type VARCHAR(20) NOT NULL DEFAULT '', "+
+				"heartbeat_received BIGINT NOT NULL DEFAULT 0, "+
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), "+
+				"PRIMARY KEY (key_value)"+
+				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	// Update from version 3 to 4
+	if oldVersion < 4 && newVersion >= 4 {
+		log.Debug("Updating to database version 4.")
+		// Fails if an account already has two keys whose names differ only by case.
+		_, err := tx.ExecContext(
+			ctx,
+			"CREATE UNIQUE INDEX IF NOT EXISTS api_key_account_name_nocase ON api_key(account_id, LOWER(key_name));",
 		)
 		if err != nil {
 			tx.Rollback()

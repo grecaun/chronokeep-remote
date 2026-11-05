@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -178,6 +178,14 @@ func TestSaveNotification(t *testing.T) {
 	err = db.SaveNotification(&notifications[11], keys[0].Value)
 	if err == nil {
 		t.Fatalf("expected error when adding notification with duplicate when value but no error was found")
+	}
+	err = db.SaveNotification(&types.RequestNotification{Type: "BATTERY_LOW", When: when.Add(time.Second * -10).UTC().Format(time.RFC3339)}, keys[0].Value)
+	if err != nil {
+		t.Fatalf("error found saving BATTERY_LOW notification: %v", err)
+	}
+	err = db.SaveNotification(&types.RequestNotification{Type: "BATTERY_CRITICAL", When: when.Add(time.Second * -11).UTC().Format(time.RFC3339)}, keys[0].Value)
+	if err != nil {
+		t.Fatalf("error found saving BATTERY_CRITICAL notification: %v", err)
 	}
 	/*err = db.SaveNotification(&notifications[2], "invalid key")
 	if err != nil {

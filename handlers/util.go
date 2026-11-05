@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -43,6 +43,19 @@ func getAPIError(c *echo.Context, code int, message string, err error) error {
 		"code":    code,
 	}).Error("API Error.")
 	return c.JSON(code, APIError{Message: message})
+}
+
+// writeKeyError reports why a key can't be used to send reads, heartbeats or
+// notifications, or returns a nil error for a write key.
+func writeKeyError(key *types.Key) (string, error) {
+	switch key.Type {
+	case "write":
+		return "", nil
+	case "delete":
+		return "Delete Keys Cannot Write", errors.New("delete key attempting to write")
+	default:
+		return "Unauthorized", errors.New("read key attempting to write")
+	}
 }
 
 func retrieveKey(r *http.Request) (*string, error) {

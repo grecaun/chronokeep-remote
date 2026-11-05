@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -259,6 +259,24 @@ func TestUpgrade(t *testing.T) {
 	version = db.checkVersion()
 	if version != 2 {
 		t.Fatalf("Version set to %v expected 2.", version)
+	}
+	// Verify version 3
+	err = db.updateTables(version, 3)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 3, err)
+	}
+	version = db.checkVersion()
+	if version != 3 {
+		t.Fatalf("Version set to %v expected 3.", version)
+	}
+	// Verify version 4
+	err = db.updateTables(version, 4)
+	if err != nil {
+		t.Fatalf("error updating database from %d to %d: %v", version, 4, err)
+	}
+	version = db.checkVersion()
+	if version != 4 {
+		t.Fatalf("Version set to %v expected 4.", version)
 	}
 	// Check for error on drop tables as well. Because we can.
 	err = db.dropTables()

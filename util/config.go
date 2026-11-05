@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -55,12 +55,12 @@ func GetConfig() (*Config, error) {
 	}
 
 	recordInterval, err := strconv.Atoi(os.Getenv("RECORD_INTERVAL"))
-	if err != nil && recordInterval < 60 {
+	if err != nil || recordInterval < 60 {
 		recordInterval = 300
 	}
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil && port < 200 {
+	if err != nil || port < 200 {
 		port = 8181
 	}
 

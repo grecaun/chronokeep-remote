@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ func (s *SQLite) GetNotification(account int64, reader_name string) (*types.Noti
 		"SELECT n.notification_id, n.notification_type, n.notification_when "+
 			"FROM (SELECT key_value AS kv, MAX(notification_when) AS max_when FROM notification GROUP BY key_value) AS b JOIN notification AS n ON b.max_when=n.notification_when AND b.kv=n.key_value "+
 			"NATURAL JOIN api_key AS a "+
-			"WHERE a.account_id=? AND a.key_name=? AND n.notification_when>?;",
+			"WHERE a.account_id=? AND LOWER(a.key_name)=LOWER(?) AND n.notification_when>?;",
 		account,
 		reader_name,
 		time.Now().Add(time.Minute*-5).Unix(),
@@ -72,7 +72,7 @@ func (s *SQLite) SaveNotification(notification *types.RequestNotification, key s
 	}
 	valid := false
 	switch notification.Type {
-	case "UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE", "SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP":
+	case "UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE", "SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP", "BATTERY_LOW", "BATTERY_CRITICAL":
 		valid = true
 	}
 	if !valid {

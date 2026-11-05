@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -279,6 +279,23 @@ func TestSaveNotification(t *testing.T) {
 	c = e.NewContext(request, response)
 	if assert.NoError(t, h.SaveNotification(c)) {
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	}
+	// Test delete key
+	t.Log("Testing delete key.")
+	body, err = json.Marshal(types.SaveNotificationRequest{
+		Note: types.RequestNotification{Type: "MAX_TEMP", When: time.Now().UTC().Format(time.RFC3339)},
+	})
+	if err != nil {
+		t.Fatalf("Error encoding request body into json object: %v", err)
+	}
+	request = httptest.NewRequest(http.MethodPost, "/notifications/save", strings.NewReader(string(body)))
+	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["delete3"])
+	response = httptest.NewRecorder()
+	c = e.NewContext(request, response)
+	if assert.NoError(t, h.SaveNotification(c)) {
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+		assert.Contains(t, response.Body.String(), "Delete Keys Cannot Write")
 	}
 	// Test valid
 	when := time.Now()

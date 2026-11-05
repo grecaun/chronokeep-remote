@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ func (p *Postgres) GetReads(account int64, reader_name string, from, to int64) (
 		ctx,
 		"SELECT key_value, identifier, seconds, milliseconds, ident_type, type, antenna,"+
 			" reader, rssi FROM read NATURAL JOIN api_key WHERE account_id=$1 AND "+
-			"key_name=$2 AND seconds>=$3 AND seconds<=$4;",
+			"LOWER(key_name)=LOWER($2) AND seconds>=$3 AND seconds<=$4;",
 		account,
 		reader_name,
 		from,
@@ -140,7 +140,7 @@ func (p *Postgres) DeleteReaderReads(account int64, reader_name string, from, to
 		ctx,
 		"DELETE FROM read r WHERE seconds>=$1 AND seconds<=$2 AND EXISTS (SELECT * "+
 			"FROM api_key a WHERE a.key_value=r.key_value AND a.account_id=$3 AND "+
-			"a.key_name=$4);",
+			"LOWER(a.key_name)=LOWER($4));",
 		from,
 		to,
 		account,
@@ -180,7 +180,7 @@ func (p *Postgres) DeleteReaderReadsBefore(account int64, reader_name string, to
 	res, err := db.Exec(
 		ctx,
 		"DELETE FROM read r WHERE seconds<=$1 AND EXISTS (SELECT * FROM api_key a WHERE "+
-			"a.key_value=r.key_value AND a.account_id=$2 AND a.key_name=$3);",
+			"a.key_value=r.key_value AND a.account_id=$2 AND LOWER(a.key_name)=LOWER($3));",
 		to,
 		account,
 		reader_name,
@@ -201,7 +201,7 @@ func (p *Postgres) DeleteReaderReadsBetween(account int64, reader_name string) (
 	res, err := db.Exec(
 		ctx,
 		"DELETE FROM read r WHERE EXISTS (SELECT * FROM api_key a WHERE "+
-			"a.key_value=r.key_value AND a.account_id=$1 AND a.key_name=$2);",
+			"a.key_value=r.key_value AND a.account_id=$1 AND LOWER(a.key_name)=LOWER($2));",
 		account,
 		reader_name,
 	)

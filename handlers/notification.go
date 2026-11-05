@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@ package handlers
 
 import (
 	"chronokeep/remote/types"
-	"errors"
 	"net/http"
 
 	"github.com/labstack/echo/v5"
@@ -90,9 +89,9 @@ func (h Handler) SaveNotification(c *echo.Context) error {
 	if mkey.Key.Expired() {
 		return getAPIError(c, http.StatusUnauthorized, "Expired Key", nil)
 	}
-	// Check to ensure a write/delete key
-	if mkey.Key.Type != "write" && mkey.Key.Type != "delete" {
-		return getAPIError(c, http.StatusUnauthorized, "Unauthorized", errors.New("read key attempting to write"))
+	// Only write keys can send reader data; delete keys are for removing reads, not for readers.
+	if msg, err := writeKeyError(mkey.Key); err != nil {
+		return getAPIError(c, http.StatusUnauthorized, msg, err)
 	}
 	if err := request.Note.Validate(h.validate); err != nil {
 		return getAPIError(c, http.StatusBadRequest, "Invalid Notification", err)

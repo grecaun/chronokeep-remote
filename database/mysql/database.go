@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -149,7 +149,7 @@ func (m *MySQL) dropTables() error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"DROP TABLE notification, a_read, api_key, settings, account;",
+		"DROP TABLE heartbeat, notification, a_read, api_key, settings, account;",
 	)
 	if err != nil {
 		return fmt.Errorf("error dropping tables: %v", err)
@@ -262,6 +262,28 @@ func (m *MySQL) createTables() error {
 				"PRIMARY KEY (notification_id)" +
 				");",
 		},
+		// HEARTBEAT TABLE
+		{
+			name: "HeartbeatTable",
+			query: "CREATE TABLE IF NOT EXISTS heartbeat(" +
+				"key_value VARCHAR(100) NOT NULL, " +
+				"heartbeat_device VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_location VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_now BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_uptime BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_battery VARCHAR(50) NOT NULL DEFAULT '', " +
+				"heartbeat_charging BOOL NOT NULL DEFAULT FALSE, " +
+				"heartbeat_hash VARCHAR(100) NOT NULL DEFAULT '', " +
+				"heartbeat_upload_errors BIGINT NOT NULL DEFAULT 0, " +
+				"heartbeat_readers_connected INT NOT NULL DEFAULT 0, " +
+				"heartbeat_readers_total INT NOT NULL DEFAULT 0, " +
+				"heartbeat_reading BOOL NOT NULL DEFAULT FALSE, " +
+				"heartbeat_chip_type VARCHAR(20) NOT NULL DEFAULT '', " +
+				"heartbeat_received BIGINT NOT NULL DEFAULT 0, " +
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), " +
+				"PRIMARY KEY (key_value)" +
+				");",
+		},
 	}
 
 	if m.db == nil {
@@ -345,6 +367,38 @@ func (m *MySQL) updateTables(oldVersion, newVersion int) error {
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
+	// Update from version 2 to 3
+	if oldVersion < 3 && newVersion >= 3 {
+		log.Debug("Updating to database version 3.")
+		_, err := tx.ExecContext(
+			ctx,
+			"CREATE TABLE IF NOT EXISTS heartbeat("+
+				"key_value VARCHAR(100) NOT NULL, "+
+				"heartbeat_device VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_location VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_now BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_uptime BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_battery VARCHAR(50) NOT NULL DEFAULT '', "+
+				"heartbeat_charging BOOL NOT NULL DEFAULT FALSE, "+
+				"heartbeat_hash VARCHAR(100) NOT NULL DEFAULT '', "+
+				"heartbeat_upload_errors BIGINT NOT NULL DEFAULT 0, "+
+				"heartbeat_readers_connected INT NOT NULL DEFAULT 0, "+
+				"heartbeat_readers_total INT NOT NULL DEFAULT 0, "+
+				"heartbeat_reading BOOL NOT NULL DEFAULT FALSE, "+
+				"heartbeat_chip_type VARCHAR(20) NOT NULL DEFAULT '', "+
+				"heartbeat_received BIGINT NOT NULL DEFAULT 0, "+
+				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), "+
+				"PRIMARY KEY (key_value)"+
+				");",
+		)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	// Update from version 3 to 4
+	// Reader names already ignore case here: the utf8mb4 *_ci collations make
+	// UNIQUE(account_id, key_name) case-insensitive, so there is nothing to change.
 	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE settings SET value=? WHERE name='version';",

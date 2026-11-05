@@ -1,5 +1,5 @@
 /*
-Chronokeep Desktop - Race Scoring Software
+Chronokeep Remote - Remote Tag Read API
 Copyright (C) 2026 James Sentinella
 
 This program is free software: you can redistribute it and/or modify
@@ -41,6 +41,9 @@ func (h Handler) Bind(group *echo.Group) {
 	// Notification handlers
 	group.POST("/notifications/save", h.SaveNotification)
 	group.GET("/notifications/get", h.GetNotifications)
+	// Heartbeat handlers
+	group.POST("/heartbeat", h.SaveHeartbeat)
+	group.GET("/heartbeats", h.GetHeartbeats)
 }
 
 func (h Handler) BindRestricted(group *echo.Group) {
