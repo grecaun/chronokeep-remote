@@ -21,6 +21,7 @@ package util
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -84,6 +85,14 @@ func GetConfig() (*Config, error) {
 
 	domain := os.Getenv("DOMAIN")
 
+	// IPs or CIDRs, separated by commas, that are never banned for probing (see handlers.ProbeBanner)
+	var banAllowlist []string
+	for _, entry := range strings.Split(os.Getenv("BAN_ALLOWLIST"), ",") {
+		if entry = strings.TrimSpace(entry); entry != "" {
+			banAllowlist = append(banAllowlist, entry)
+		}
+	}
+
 	return &Config{
 		DBName:         dbName,
 		DBHost:         dbHost,
@@ -101,6 +110,7 @@ func GetConfig() (*Config, error) {
 		AdminName:      admin_name,
 		AdminPass:      admin_pass,
 		Domain:         domain,
+		BanAllowlist:   banAllowlist,
 	}, nil
 }
 
@@ -122,5 +132,6 @@ type Config struct {
 	AdminName      string
 	AdminPass      string
 	Domain         string
+	BanAllowlist   []string
 }
 

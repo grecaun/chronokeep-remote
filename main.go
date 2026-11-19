@@ -46,6 +46,14 @@ func main() {
 	}
 	e := echo.New()
 
+	// Ban IPs that go looking for exploits (.env, .php, .git and so on). This runs before
+	// routing and logging, so banned IPs are turned away without filling the logs.
+	probeBanner, err := handlers.NewProbeBanner(config.BanAllowlist)
+	if err != nil {
+		log.Fatal("Failed to set up probe bans. ", err)
+	}
+	e.Pre(probeBanner.Middleware())
+
 	log.Info("Setting up base middleware.")
 	// Set up Recover and Logger middleware
 	e.Use(middleware.Recover())
