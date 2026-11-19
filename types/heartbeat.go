@@ -39,6 +39,8 @@ type Heartbeat struct {
 	ReadersTotal     int    `json:"readers_total" validate:"min=0"`
 	Reading          bool   `json:"reading"`
 	ChipType         string `json:"chip_type" validate:"max=20"`
+	// Temperature is the device's CPU temperature in degrees Celsius, or nil when it couldn't be read.
+	Temperature *float64 `json:"temperature,omitempty" validate:"omitempty,min=-100,max=200"`
 }
 
 // Validate Ensures valid data in the structure.

@@ -226,11 +226,12 @@ func TestReadEquals(t *testing.T) {
 func TestRequestNotificationValidate(t *testing.T) {
 	v := validator.New()
 	when := time.Now().UTC().Format(time.RFC3339)
-	for _, typ := range []string{"UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE",
-		"SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP", "BATTERY_LOW", "BATTERY_CRITICAL"} {
+	for _, typ := range []string{"SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP", "BATTERY_LOW", "BATTERY_CRITICAL"} {
 		assert.NoError(t, (&RequestNotification{Type: typ, When: when}).Validate(v), typ)
 	}
-	for _, typ := range []string{"", "battery_low", "UNKNOWN"} {
+	// UPS notifications are no longer used
+	for _, typ := range []string{"", "battery_low", "UNKNOWN",
+		"UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE"} {
 		assert.Error(t, (&RequestNotification{Type: typ, When: when}).Validate(v), "type %q", typ)
 	}
 	for _, w := range []string{"", "2026-01-02", "2026-01-02 03:04:05", "1767323045"} {
@@ -283,6 +284,13 @@ func TestHeartbeatValidate(t *testing.T) {
 		set(&h)
 		assert.Error(t, h.Validate(v), "negative %v", name)
 	}
+	// Temperature is optional, and checked against a sensible range in °C when sent.
+	for _, temp := range []float64{-100, 0, 54.5, 200} {
+		assert.NoError(t, (&Heartbeat{Temperature: &temp}).Validate(v), "temperature %v", temp)
+	}
+	for _, temp := range []float64{-100.1, 200.1} {
+		assert.Error(t, (&Heartbeat{Temperature: &temp}).Validate(v), "temperature %v", temp)
+	}
 }
 
 func TestHeartbeatJSON(t *testing.T) {
@@ -291,6 +299,14 @@ func TestHeartbeatJSON(t *testing.T) {
 	err := json.Unmarshal([]byte(`{"dev":"Relay","now":5,"uptime":60,"reading":true,"chip_type":"HEX","future_field":1}`), &hb)
 	if assert.NoError(t, err) {
 		assert.Equal(t, Heartbeat{Device: "Relay", Now: 5, Uptime: 60, Reading: true, ChipType: "HEX"}, hb)
+	}
+	// The portal sends its temperature; without one, temperature is left out of the response.
+	hb = Heartbeat{}
+	if assert.NoError(t, json.Unmarshal([]byte(`{"dev":"Portal","temperature":54.5}`), &hb)) && assert.NotNil(t, hb.Temperature) {
+		assert.Equal(t, 54.5, *hb.Temperature)
+	}
+	if out, err := json.Marshal(Heartbeat{Device: "Relay"}); assert.NoError(t, err) {
+		assert.NotContains(t, string(out), "temperature")
 	}
 	// Received is written as an RFC 3339 date-time string.
 	when := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)

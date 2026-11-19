@@ -29,7 +29,7 @@ const (
 	MaxOpenConnections    = 20
 	MaxIdleConnections    = 20
 	MaxConnectionLifetime = time.Minute * 5
-	CurrentVersion        = 4
+	CurrentVersion        = 5
 	MaxLoginAttempts      = 4
 	// HeartbeatMaxAge is how far back GetHeartbeats looks when listing every reader's latest heartbeat.
 	// It doesn't apply when a single reader is asked for by name.

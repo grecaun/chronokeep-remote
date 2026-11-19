@@ -72,7 +72,7 @@ func (p *Postgres) SaveNotification(notification *types.RequestNotification, key
 	}
 	valid := false
 	switch notification.Type {
-	case "UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE", "SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP", "BATTERY_LOW", "BATTERY_CRITICAL":
+	case "SHUTTING_DOWN", "RESTARTING", "HIGH_TEMP", "MAX_TEMP", "BATTERY_LOW", "BATTERY_CRITICAL":
 		valid = true
 	}
 	if !valid {

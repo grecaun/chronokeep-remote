@@ -153,7 +153,7 @@ func TestGetNotifications(t *testing.T) {
 		var resp types.GetNotificationsResponse
 		if assert.NoError(t, json.Unmarshal(response.Body.Bytes(), &resp)) {
 			assert.Equal(t, "reader6", resp.ReaderName)
-			assert.Equal(t, "UPS_DISCONNECTED", resp.Note.Type)
+			assert.Equal(t, "HIGH_TEMP", resp.Note.Type)
 		}
 	}
 	// Test valid but no notification found
@@ -302,7 +302,7 @@ func TestSaveNotification(t *testing.T) {
 	t.Log("Testing valid request.")
 	body, err = json.Marshal(types.SaveNotificationRequest{
 		Note: types.RequestNotification{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: when.UTC().Format(time.RFC3339),
 		},
 	})
@@ -322,7 +322,7 @@ func TestSaveNotification(t *testing.T) {
 	note, err := database.GetNotification(variables.accounts[0].Identifier, variables.knownValues["writeName"])
 	if assert.NoError(t, err) {
 		if assert.NotNil(t, note) {
-			assert.Equal(t, "UPS_DISCONNECTED", note.Type)
+			assert.Equal(t, "HIGH_TEMP", note.Type)
 		}
 	}
 	// Test validation -- Type
@@ -344,11 +344,32 @@ func TestSaveNotification(t *testing.T) {
 	if assert.NoError(t, h.SaveNotification(c)) {
 		assert.Equal(t, http.StatusBadRequest, response.Code)
 	}
+	// UPS notifications are no longer used, so they're turned away like any unknown type
+	t.Log("Testing validation -- UPS types")
+	for _, typ := range []string{"UPS_DISCONNECTED", "UPS_CONNECTED", "UPS_ON_BATTERY", "UPS_LOW_BATTERY", "UPS_ONLINE"} {
+		body, err = json.Marshal(types.SaveNotificationRequest{
+			Note: types.RequestNotification{
+				Type: typ,
+				When: when.UTC().Format(time.RFC3339),
+			},
+		})
+		if err != nil {
+			t.Fatalf("Error encoding request body into json object: %v", err)
+		}
+		request = httptest.NewRequest(http.MethodPost, "/notifications/save", strings.NewReader(string(body)))
+		request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		request.Header.Set(echo.HeaderAuthorization, "Bearer "+variables.knownValues["write"])
+		response = httptest.NewRecorder()
+		c = e.NewContext(request, response)
+		if assert.NoError(t, h.SaveNotification(c)) {
+			assert.Equal(t, http.StatusBadRequest, response.Code, typ)
+		}
+	}
 	// Test validation -- When
 	t.Log("Testing validation -- When")
 	body, err = json.Marshal(types.SaveNotificationRequest{
 		Note: types.RequestNotification{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: "invalid",
 		},
 	})

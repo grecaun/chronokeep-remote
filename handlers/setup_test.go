@@ -182,11 +182,11 @@ func setupTests(t *testing.T) (SetupVariables, func(t *testing.T)) {
 	when := time.Now()
 	notes := []types.RequestNotification{
 		{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: when.UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_LOW_BATTERY",
+			Type: "BATTERY_CRITICAL",
 			When: when.Add(time.Minute * -10).UTC().Format(time.RFC3339),
 		},
 	}

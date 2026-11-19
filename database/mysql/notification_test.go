@@ -87,27 +87,27 @@ func TestSaveNotification(t *testing.T) {
 			When: when.UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: "invalid date",
 		},
 		{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: when.Add(time.Second * -9).UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_CONNECTED",
+			Type: "RESTARTING",
 			When: when.Add(time.Second * -8).UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_ON_BATTERY",
+			Type: "BATTERY_LOW",
 			When: when.Add(time.Second * -7).UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_LOW_BATTERY",
+			Type: "BATTERY_CRITICAL",
 			When: when.Add(time.Second * -6).UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_ONLINE",
+			Type: "SHUTTING_DOWN",
 			When: when.Add(time.Second * -5).UTC().Format(time.RFC3339),
 		},
 		{
@@ -219,15 +219,15 @@ func TestGetNotification(t *testing.T) {
 	when := time.Now()
 	notifications := []types.RequestNotification{
 		{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: when.UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_DISCONNECTED",
+			Type: "HIGH_TEMP",
 			When: when.Add(time.Minute * -6).UTC().Format(time.RFC3339),
 		},
 		{
-			Type: "UPS_ON_BATTERY",
+			Type: "BATTERY_LOW",
 			When: when.Add(time.Second * -10).UTC().Format(time.RFC3339),
 		},
 	}

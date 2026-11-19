@@ -36,9 +36,9 @@ func (m *MySQL) SaveHeartbeat(key string, heartbeat types.Heartbeat) error {
 	defer cancelfunc()
 	_, err = db.ExecContext(
 		ctx,
-		"INSERT INTO heartbeat(key_value, heartbeat_device, heartbeat_location, heartbeat_now, heartbeat_uptime, heartbeat_battery, heartbeat_charging, heartbeat_hash, heartbeat_upload_errors, heartbeat_readers_connected, heartbeat_readers_total, heartbeat_reading, heartbeat_chip_type, heartbeat_received) "+
-			"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"+
-			" ON DUPLICATE KEY UPDATE heartbeat_device=VALUES(heartbeat_device), heartbeat_location=VALUES(heartbeat_location), heartbeat_now=VALUES(heartbeat_now), heartbeat_uptime=VALUES(heartbeat_uptime), heartbeat_battery=VALUES(heartbeat_battery), heartbeat_charging=VALUES(heartbeat_charging), heartbeat_hash=VALUES(heartbeat_hash), heartbeat_upload_errors=VALUES(heartbeat_upload_errors), heartbeat_readers_connected=VALUES(heartbeat_readers_connected), heartbeat_readers_total=VALUES(heartbeat_readers_total), heartbeat_reading=VALUES(heartbeat_reading), heartbeat_chip_type=VALUES(heartbeat_chip_type), heartbeat_received=VALUES(heartbeat_received);",
+		"INSERT INTO heartbeat(key_value, heartbeat_device, heartbeat_location, heartbeat_now, heartbeat_uptime, heartbeat_battery, heartbeat_charging, heartbeat_hash, heartbeat_upload_errors, heartbeat_readers_connected, heartbeat_readers_total, heartbeat_reading, heartbeat_chip_type, heartbeat_temperature, heartbeat_received) "+
+			"VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"+
+			" ON DUPLICATE KEY UPDATE heartbeat_device=VALUES(heartbeat_device), heartbeat_location=VALUES(heartbeat_location), heartbeat_now=VALUES(heartbeat_now), heartbeat_uptime=VALUES(heartbeat_uptime), heartbeat_battery=VALUES(heartbeat_battery), heartbeat_charging=VALUES(heartbeat_charging), heartbeat_hash=VALUES(heartbeat_hash), heartbeat_upload_errors=VALUES(heartbeat_upload_errors), heartbeat_readers_connected=VALUES(heartbeat_readers_connected), heartbeat_readers_total=VALUES(heartbeat_readers_total), heartbeat_reading=VALUES(heartbeat_reading), heartbeat_chip_type=VALUES(heartbeat_chip_type), heartbeat_temperature=VALUES(heartbeat_temperature), heartbeat_received=VALUES(heartbeat_received);",
 		key,
 		heartbeat.Device,
 		heartbeat.Location,
@@ -52,6 +52,7 @@ func (m *MySQL) SaveHeartbeat(key string, heartbeat types.Heartbeat) error {
 		heartbeat.ReadersTotal,
 		heartbeat.Reading,
 		heartbeat.ChipType,
+		heartbeat.Temperature,
 		time.Now().UnixMilli(),
 	)
 	if err != nil {
@@ -72,7 +73,7 @@ func (m *MySQL) GetHeartbeats(account int64, reader_name string) ([]types.Reader
 	}
 	ctx, cancelfunc := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancelfunc()
-	query := "SELECT a.key_name, h.heartbeat_device, h.heartbeat_location, h.heartbeat_now, h.heartbeat_uptime, h.heartbeat_battery, h.heartbeat_charging, h.heartbeat_hash, h.heartbeat_upload_errors, h.heartbeat_readers_connected, h.heartbeat_readers_total, h.heartbeat_reading, h.heartbeat_chip_type, h.heartbeat_received " +
+	query := "SELECT a.key_name, h.heartbeat_device, h.heartbeat_location, h.heartbeat_now, h.heartbeat_uptime, h.heartbeat_battery, h.heartbeat_charging, h.heartbeat_hash, h.heartbeat_upload_errors, h.heartbeat_readers_connected, h.heartbeat_readers_total, h.heartbeat_reading, h.heartbeat_chip_type, h.heartbeat_temperature, h.heartbeat_received " +
 		"FROM heartbeat AS h JOIN api_key AS a ON h.key_value=a.key_value " +
 		"WHERE a.account_id=? AND a.key_deleted=FALSE"
 	args := []any{account}
@@ -108,6 +109,7 @@ func (m *MySQL) GetHeartbeats(account int64, reader_name string) ([]types.Reader
 			&hb.Heartbeat.ReadersTotal,
 			&hb.Heartbeat.Reading,
 			&hb.Heartbeat.ChipType,
+			&hb.Heartbeat.Temperature,
 			&received,
 		)
 		if err != nil {

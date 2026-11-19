@@ -126,3 +126,53 @@ func TestHeartbeats(t *testing.T) {
 		t.Fatalf("Expected no heartbeats, found %+v", beats)
 	}
 }
+
+func TestHeartbeatTemperature(t *testing.T) {
+	db, finalize, err := setupTests(t)
+	if err != nil {
+		t.Fatalf("Error setting up test. %v", err)
+	}
+	defer finalize(t)
+	setupNotificationTests()
+	account, _ := db.AddAccount(accounts[0])
+	for _, k := range []types.Key{
+		{AccountIdentifier: account.Identifier, Value: "temp-key-1", Type: "write", Name: "hot"},
+		{AccountIdentifier: account.Identifier, Value: "temp-key-2", Type: "write", Name: "unknown"},
+	} {
+		if _, err := db.AddKey(k); err != nil {
+			t.Fatalf("Error adding key: %v", err)
+		}
+	}
+	temperature := 54.5
+	if err := db.SaveHeartbeat("temp-key-1", types.Heartbeat{Device: "Portal", Temperature: &temperature}); err != nil {
+		t.Fatalf("Error saving heartbeat: %v", err)
+	}
+	// devices that can't read their temperature don't send one
+	if err := db.SaveHeartbeat("temp-key-2", types.Heartbeat{Device: "Relay"}); err != nil {
+		t.Fatalf("Error saving heartbeat: %v", err)
+	}
+	beats, err := db.GetHeartbeats(account.Identifier, "")
+	if err != nil {
+		t.Fatalf("Error getting heartbeats: %v", err)
+	}
+	if len(beats) != 2 {
+		t.Fatalf("Expected 2 heartbeats, found %v", len(beats))
+	}
+	if beats[0].ReaderName != "hot" || beats[0].Heartbeat.Temperature == nil || *beats[0].Heartbeat.Temperature != 54.5 {
+		t.Errorf("Expected a temperature of 54.5 for hot, found %+v", beats[0])
+	}
+	if beats[1].ReaderName != "unknown" || beats[1].Heartbeat.Temperature != nil {
+		t.Errorf("Expected no temperature for unknown, found %+v", beats[1])
+	}
+	// a newer heartbeat without a temperature clears the old one
+	if err := db.SaveHeartbeat("temp-key-1", types.Heartbeat{Device: "Portal"}); err != nil {
+		t.Fatalf("Error saving heartbeat: %v", err)
+	}
+	beats, err = db.GetHeartbeats(account.Identifier, "hot")
+	if err != nil || len(beats) != 1 {
+		t.Fatalf("Error getting heartbeat: %v", err)
+	}
+	if beats[0].Heartbeat.Temperature != nil {
+		t.Errorf("Expected the temperature to be cleared, found %v", *beats[0].Heartbeat.Temperature)
+	}
+}

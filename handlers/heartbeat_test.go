@@ -86,6 +86,15 @@ func TestSaveHeartbeat(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, send(string(badBody), "Bearer "+variables.knownValues["write"]).Code)
 	t.Log("Testing valid heartbeat with write key.")
 	assert.Equal(t, http.StatusOK, send(string(body), "Bearer "+variables.knownValues["write"]).Code)
+	t.Log("Testing a portal heartbeat with its temperature.")
+	portal := `{"dev":"Portal 1","location":"Portal 1","now":1762300030000,"uptime":3630,"battery":"4.10","charging":true,"hash":"Chronokeep Portal v1.0.0","upload_errors":0,"readers_connected":1,"readers_total":2,"reading":true,"chip_type":"DEC","temperature":61.3}`
+	assert.Equal(t, http.StatusOK, send(portal, "Bearer "+variables.knownValues["write"]).Code)
+	if beats, err := database.GetHeartbeats(variables.accounts[0].Identifier, ""); assert.NoError(t, err) && assert.Len(t, beats, 1) && assert.NotNil(t, beats[0].Heartbeat.Temperature) {
+		assert.Equal(t, 61.3, *beats[0].Heartbeat.Temperature)
+	}
+	t.Log("Testing a temperature out of range.")
+	tooHot := strings.Replace(portal, `"temperature":61.3`, `"temperature":1000`, 1)
+	assert.Equal(t, http.StatusBadRequest, send(tooHot, "Bearer "+variables.knownValues["write"]).Code)
 	t.Log("Testing relay-style heartbeat (no battery fields) replaces the previous one.")
 	relay := `{"dev":"Relay","location":"Relay","now":1762300060000,"uptime":60,"hash":"Chronokeep Relay v0.1.0","upload_errors":0,"readers_connected":0,"readers_total":1,"reading":false,"chip_type":""}`
 	assert.Equal(t, http.StatusOK, send(relay, "Bearer "+variables.knownValues["write"]).Code)

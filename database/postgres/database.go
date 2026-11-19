@@ -286,6 +286,7 @@ func (p *Postgres) createTables() error {
 				"heartbeat_readers_total INT NOT NULL DEFAULT 0, " +
 				"heartbeat_reading BOOL NOT NULL DEFAULT FALSE, " +
 				"heartbeat_chip_type VARCHAR(20) NOT NULL DEFAULT '', " +
+				"heartbeat_temperature DOUBLE PRECISION DEFAULT NULL, " +
 				"heartbeat_received BIGINT NOT NULL DEFAULT 0, " +
 				"FOREIGN KEY (key_value) REFERENCES api_key(key_value), " +
 				"PRIMARY KEY (key_value)" +
@@ -428,6 +429,18 @@ func (p *Postgres) updateTables(oldVersion, newVersion int) error {
 		if err != nil {
 			tx.Rollback(ctx)
 			return fmt.Errorf("error updating from verison %d to %d: %v", oldVersion, newVersion, err)
+		}
+	}
+	// Update from version 4 to 5
+	if oldVersion < 5 && newVersion >= 5 {
+		log.Debug("Updating to database version 5.")
+		_, err := tx.Exec(
+			ctx,
+			"ALTER TABLE heartbeat ADD COLUMN heartbeat_temperature DOUBLE PRECISION DEFAULT NULL;",
+		)
+		if err != nil {
+			tx.Rollback(ctx)
+			return fmt.Errorf("error updating from version %d to %d: %v", oldVersion, newVersion, err)
 		}
 	}
 	_, err = tx.Exec(
